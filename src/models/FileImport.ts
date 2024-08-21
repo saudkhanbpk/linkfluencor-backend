@@ -1,9 +1,10 @@
 import { Schema, model, Document } from 'mongoose';
+import { FileImportStatus } from '../types/enums';
 
 export interface IFileImport extends Document {
   user: Schema.Types.ObjectId;
   filePath: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: FileImportStatus;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -11,7 +12,7 @@ export interface IFileImport extends Document {
 const fileImportSchema = new Schema<IFileImport>({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   filePath: { type: String, required: true },
-  status: { type: String, enum: ['pending', 'processing', 'completed', 'failed'], default: 'pending' },
+  status: { type: String, enum: Object.values(FileImportStatus), default: FileImportStatus.Pending },
 }, {
   timestamps: true,
 });

@@ -1,10 +1,11 @@
 import { Schema, model, Document } from 'mongoose';
+import { TeamMemberRole } from '../types/enums';
 
 export interface ITeam extends Document {
   name: string;
   isPersonal: boolean;
   mainUser: Schema.Types.ObjectId;
-  members: Array<{ user: Schema.Types.ObjectId, role: string }>;
+  members: Array<{ user: Schema.Types.ObjectId, role: TeamMemberRole }>;
 }
 
 const teamSchema = new Schema<ITeam>({
@@ -14,7 +15,7 @@ const teamSchema = new Schema<ITeam>({
   members: [
     {
       user: { type: Schema.Types.ObjectId, ref: 'User' },
-      role: { type: String, enum: ['admin', 'editor', 'viewer'], default: 'editor' }
+      role: { type: String, enum: Object.values(TeamMemberRole), default: TeamMemberRole.Editor }
     }
   ],
 }, {
