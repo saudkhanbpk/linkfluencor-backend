@@ -6,7 +6,11 @@ interface CustomRequest extends Request {
   user?: any;
 }
 
-export const authMiddleware = async (req: CustomRequest, res: Response, next: NextFunction) => {
+export const authMiddleware = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
 
   if (!token) {

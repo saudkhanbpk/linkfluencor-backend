@@ -9,8 +9,6 @@ import routes from './routes/';
 
 const app: Application = express();
 
-
-
 mongoose.set('strictQuery', true);
 
 app.use(errorHandler);

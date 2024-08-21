@@ -1,5 +1,10 @@
 import { Request, Response } from 'express';
-import { getUserById, getAllUsers, createUser, updateUser, deleteUser } from '../services/userService';
+import {
+  getUserById,
+  getAllUsers,
+  updateUser,
+  deleteUser,
+} from '../services/userService';
 
 export const getUser = async (req: Request, res: Response) => {
   try {
@@ -15,19 +20,9 @@ export const getUser = async (req: Request, res: Response) => {
 };
 
 export const getAllUsersController = async (_req: Request, res: Response) => {
-  console.log('getAllUsersController')
   try {
     const users = await getAllUsers();
     res.json(users);
-  } catch (error) {
-    res.status(500).json({ message: error });
-  }
-};
-
-export const createUserController = async (req: Request, res: Response) => {
-  try {
-    const savedUser = await createUser(req.body);
-    res.status(201).json(savedUser);
   } catch (error) {
     res.status(500).json({ message: error });
   }

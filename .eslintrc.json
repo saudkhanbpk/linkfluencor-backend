@@ -13,6 +13,8 @@
   "env": {
     "node": true,
     "jest": true,
+    "browser": true,
+    "es2021": true,
     "es6": true
   },
   "rules": {

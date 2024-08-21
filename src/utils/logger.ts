@@ -27,7 +27,9 @@ const fileFormat = winston.format.combine(
 const consoleFormat = winston.format.combine(
   winston.format.colorize(),
   winston.format.timestamp(),
-  winston.format.printf(({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`)
+  winston.format.printf(
+    ({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`
+  )
 );
 
 const transports = [
@@ -36,7 +38,12 @@ const transports = [
 ];
 
 if (process.env.NODE_ENV !== 'production') {
-  transports.push(new winston.transports.File({ filename: 'logs/console.log', format: consoleFormat }));
+  transports.push(
+    new winston.transports.File({
+      filename: 'logs/console.log',
+      format: consoleFormat,
+    })
+  );
 }
 
 const logger = winston.createLogger({

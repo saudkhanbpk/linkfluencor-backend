@@ -10,15 +10,18 @@ export interface ILink extends Document {
   updatedAt: Date;
 }
 
-const linkSchema = new Schema<ILink>({
-  originalUrl: { type: String, required: true },
-  shortUrl: { type: String, required: true, unique: true },
-  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  team: { type: Schema.Types.ObjectId, ref: 'Team', default: null },
-  clicks: { type: Number, default: 0 },
-}, {
-  timestamps: true,
-});
+const linkSchema = new Schema<ILink>(
+  {
+    originalUrl: { type: String, required: true },
+    shortUrl: { type: String, required: true, unique: true },
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    team: { type: Schema.Types.ObjectId, ref: 'Team', default: null },
+    clicks: { type: Number, default: 0 },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 const Link = model<ILink>('Link', linkSchema);
 export default Link;

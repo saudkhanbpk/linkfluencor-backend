@@ -11,15 +11,22 @@ export interface IPayment extends Document {
   updatedAt: Date;
 }
 
-const paymentSchema = new Schema<IPayment>({
-  user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  amount: { type: Number, required: true },
-  currency: { type: String, required: true },
-  status: { type: String, enum: Object.values(PaymentStatus), default: PaymentStatus.Pending },
-  transactionId: { type: String, required: true },
-}, {
-  timestamps: true,
-});
+const paymentSchema = new Schema<IPayment>(
+  {
+    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    amount: { type: Number, required: true },
+    currency: { type: String, required: true },
+    status: {
+      type: String,
+      enum: Object.values(PaymentStatus),
+      default: PaymentStatus.Pending,
+    },
+    transactionId: { type: String, required: true },
+  },
+  {
+    timestamps: true,
+  }
+);
 
 const Payment = model<IPayment>('Payment', paymentSchema);
 export default Payment;

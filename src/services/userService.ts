@@ -29,23 +29,12 @@ export const getUserById = async (id: string) => {
   }
 };
 
-export const createUser = async (userData: any) => {
-  try {
-    log.info('Creating new user');
-    const newUser = new User(userData);
-    const savedUser = await newUser.save();
-    log.info(`Created user: ${savedUser}`);
-    return savedUser;
-  } catch (error: any) {
-    log.error(`Error creating user: ${error.message}`);
-    throw error;
-  }
-};
-
 export const updateUser = async (id: string, updateData: any) => {
   try {
     log.info(`Updating user with id: ${id}`);
-    const updatedUser = await User.findByIdAndUpdate(id, updateData, { new: true });
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
     if (updatedUser) {
       log.info(`Updated user: ${updatedUser}`);
     } else {

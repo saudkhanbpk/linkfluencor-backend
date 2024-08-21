@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+
 export enum UserRole {
   User = 'user',
   Brand = 'brand',
@@ -19,24 +21,24 @@ export enum FileImportStatus {
   Pending = 'pending',
   Processing = 'processing',
   Completed = 'completed',
-  Failed = 'failed'
+  Failed = 'failed',
 }
 
 export enum PaymentStatus {
   Pending = 'pending',
   Completed = 'completed',
-  Failed = 'failed'
+  Failed = 'failed',
 }
 
 export enum SubscriptionPlan {
   Free = 'free',
   Starter = 'starter',
   Grow = 'grow',
-  Scale = 'scale'
+  Scale = 'scale',
 }
 
 export enum TeamMemberRole {
   Admin = 'admin',
   Editor = 'editor',
-  Viewer = 'viewer'
+  Viewer = 'viewer',
 }
