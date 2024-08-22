@@ -1,6 +1,6 @@
 import { Schema, model, Document } from 'mongoose';
 import jwt from 'jsonwebtoken';
-import SubscriptionService from '../services/subscriptionService';
+import { createSubscription } from '../services/subscriptionService';
 
 import { comparePassword } from '../utils/authUtils';
 import { UserRole, AuthProvider, UserStatus } from '../types/enums';
@@ -98,7 +98,7 @@ userSchema.pre('save', function (next: (_err?: Error) => void) {
 
 userSchema.post('save', async function (user: IUser) {
   if (!user.subscription) {
-    const subscription = await SubscriptionService.createSubscription(user._id);
+    const subscription = await createSubscription(user._id);
     user.subscription = subscription._id;
     await user.save();
   }

@@ -1,4 +1,5 @@
 import { Schema, model, Document } from 'mongoose';
+import crypto from 'crypto';
 
 export interface ILink extends Document {
   originalUrl: string;
@@ -22,6 +23,11 @@ const linkSchema = new Schema<ILink>(
     timestamps: true,
   }
 );
+
+linkSchema.statics.generateShortUrl = function (username: string): string {
+  const randomString = crypto.randomBytes(4).toString('hex');
+  return `${process.env.APP_URL}/${username}/${randomString}`;
+};
 
 const Link = model<ILink>('Link', linkSchema);
 export default Link;

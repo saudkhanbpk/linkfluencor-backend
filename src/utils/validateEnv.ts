@@ -9,6 +9,7 @@ const validateEnv = () => {
     PORT: port({ default: 3000 }),
     MONGO_URI: str(),
     JWT_SECRET: str(),
+    APP_URL: str(),
   });
 };
 
