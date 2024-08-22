@@ -31,7 +31,12 @@ interface IUser extends Document {
 const userSchema = new Schema<IUser>({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    match: [/^\S+@\S+\.\S+$/, 'Please use a valid email address.'],
+  },
   password: {
     type: String,
     // eslint-disable-next-line no-unused-vars

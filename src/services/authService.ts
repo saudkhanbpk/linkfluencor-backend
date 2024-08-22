@@ -14,54 +14,62 @@ export const registerUser = async (
   authProvider: string,
   role: string
 ) => {
-  log.info(`Registering new user: ${email}`);
+  try {
+    log.info(`Registering new user: ${email}`);
 
-  const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email });
 
-  if (existingUser) {
-    log.warn(`User already exists: ${email}`);
-    throw new Error('User already exists');
+    if (existingUser) {
+      log.warn(`User already exists: ${email}`);
+      throw new Error('User already exists');
+    }
+
+    const hashedPassword = await hashPassword(password);
+
+    const user = new User({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      status: 'active',
+      authProvider,
+      role,
+    });
+
+    await user.save();
+    log.info(`User saved ${email}`);
+
+    return { user, token: user.generateAuthToken() };
+  } catch (error: any) {
+    log.error(`Error registering user: ${error.message}`);
+    throw error;
   }
-
-  const hashedPassword = await hashPassword(password);
-
-  const user = new User({
-    firstName,
-    lastName,
-    email,
-    password: hashedPassword,
-    status: 'active',
-    authProvider,
-    role,
-  });
-
-  await user.save();
-  log.info(`User saved ${email}`);
-
-  const token = user.generateAuthToken();
-
-  return { token, user };
 };
 
 export const loginUser = async (email: string, password: string) => {
-  log.info(`Attempting login for email: ${email}`);
-  const user = await User.findOne({ email });
+  try {
+    log.info(`Attempting login for email: ${email}`);
+    const user = await User.findOne({ email });
 
-  if (!user) {
-    log.warn(`Login failed: User not found for email ${email}`);
-    throw new Error('Invalid credentials');
+    if (!user) {
+      log.warn(`Login failed: User not found for email ${email}`);
+      throw new Error('Invalid credentials');
+    }
+
+    const isMatch = await comparePassword(password, user.password);
+
+    if (!isMatch) {
+      log.warn(`Login failed: Incorrect password for email ${email}`);
+      throw new Error('Invalid credentials');
+    }
+
+    const token = generateToken(user._id);
+
+    log.info(`User logged in successfully: ${email}`);
+
+    return { token, user };
+  } catch (error: any) {
+    log.error(`Error logging in user: ${error.message}`);
+    throw error;
   }
-
-  const isMatch = await comparePassword(password, user.password);
-
-  if (!isMatch) {
-    log.warn(`Login failed: Incorrect password for email ${email}`);
-    throw new Error('Invalid credentials');
-  }
-
-  const token = generateToken(user._id);
-
-  log.info(`User logged in successfully: ${email}`);
-
-  return { token, user };
 };

@@ -36,7 +36,7 @@ export const updateUser = async (id: string, updateData: any) => {
       new: true,
     });
     if (updatedUser) {
-      log.info(`Updated user: ${updatedUser}`);
+      log.info(`Updated user with id: ${id}`);
     } else {
       log.warn(`User with id: ${id} not found`);
     }
