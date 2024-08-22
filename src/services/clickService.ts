@@ -47,6 +47,7 @@ export const saveClickInfo = async (
     userAgent: req.headers['user-agent'],
     platform: req.headers['sec-ch-ua-platform'] ?? 'Unknown',
     country: geo ? geo.country : 'Unknown',
+    city: geo ? geo.city : 'Unknown',
     referrer: req.headers['referer'] || null,
     shortUrl: shortUrl,
   });

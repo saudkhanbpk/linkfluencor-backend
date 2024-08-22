@@ -7,6 +7,7 @@ export interface ILink extends Document {
   user: Schema.Types.ObjectId;
   team: Schema.Types.ObjectId | null;
   clicks: number;
+  targetSite: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -18,6 +19,7 @@ const linkSchema = new Schema<ILink>(
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     team: { type: Schema.Types.ObjectId, ref: 'Team', default: null },
     clicks: { type: Number, default: 0 },
+    targetSite: { type: String, required: true },
   },
   {
     timestamps: true,

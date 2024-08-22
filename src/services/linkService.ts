@@ -3,6 +3,7 @@ import log from '../utils/logger';
 import Link, { ILink } from '../models/Link';
 import User from '../models/User';
 import { generateShortUrl } from '../utils/urlGenerator';
+import { detectTargetSite } from '../utils/urlUtils';
 
 export const getAllLinksForUser = async (userId: string) => {
   log.info(`Fetching all links for user with id: ${userId}`);
@@ -36,12 +37,14 @@ export const createShortLink = async (
   }
 
   const shortUrl = generateShortUrl();
+  const targetSite = detectTargetSite(originalUrl);
   log.info(`Generated short URL: ${shortUrl}`);
 
   const newLink = new Link({
     user: user._id,
     originalUrl,
     shortUrl,
+    targetSite,
   });
 
   await newLink.save();
@@ -85,6 +88,7 @@ export const updateShortLink = async (
     log.warn(`Short URL: ${newShortUrl} is already in use`);
     throw new Error('Short URL already in use');
   }
+  console.log(newShortUrl, 'newShortUrl');
 
   link.shortUrl = newShortUrl;
   await link.save();

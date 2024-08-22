@@ -7,6 +7,7 @@ export interface IClick extends Document {
   userAgent: string;
   platform: string;
   country: string;
+  city: string;
   referrer: string | null;
 }
 
@@ -18,6 +19,7 @@ const clickSchema = new Schema<IClick>(
     userAgent: { type: String, required: true },
     platform: { type: String, required: true },
     country: { type: String, required: true },
+    city: { type: String, required: true },
     referrer: { type: String, default: null },
   },
   {
