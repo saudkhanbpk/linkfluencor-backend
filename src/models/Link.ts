@@ -26,6 +26,13 @@ const linkSchema = new Schema<ILink>(
   }
 );
 
+linkSchema.pre<ILink>('save', function (next) {
+  if (!/^https?:\/\//i.test(this.originalUrl)) {
+    this.originalUrl = `http://${this.originalUrl}`;
+  }
+  next();
+});
+
 linkSchema.statics.generateShortUrl = function (username: string): string {
   const randomString = crypto.randomBytes(4).toString('hex');
   return `${process.env.APP_URL}/${username}/${randomString}`;
