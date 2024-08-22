@@ -10,6 +10,7 @@ import {
 } from '../services/subscriptionService';
 import Click from '../models/Click';
 import { ILink } from '../models/Link';
+import { TimeInterval, TimeGranularity } from '../types/types';
 
 export const handleClick = async (req: Request) => {
   const shortUrl = req.params.link;
@@ -58,7 +59,7 @@ export const getClicksForLink = async (linkId: string) => {
   return clicks;
 };
 
-export const getClickTrend = async (linkId: string): Promise<number> => {
+export const getLinkClicksTrend = async (linkId: string): Promise<number> => {
   const now = moment();
   const startOfToday = now.startOf('day').toDate();
   const startOfThreeDaysAgo = now.subtract(2, 'days').startOf('day').toDate();
@@ -86,4 +87,131 @@ export const getClickTrend = async (linkId: string): Promise<number> => {
       clicksPreviousThreeDays) *
     100;
   return trend;
+};
+
+export const getClicksByIntervalAndUser = async (
+  interval: TimeInterval,
+  userId: string
+) => {
+  const now = moment();
+  const startOfInterval = now.startOf(interval).toDate();
+  const endOfInterval = now.endOf(interval).toDate();
+
+  return await Click.find({
+    user: userId,
+    clickedAt: { $gte: startOfInterval, $lt: endOfInterval },
+  });
+};
+
+export const getTotalClicksByUser = async (
+  interval: TimeInterval,
+  userId: string
+): Promise<number> => {
+  const clicks = await getClicksByIntervalAndUser(interval, userId);
+  return clicks.length;
+};
+
+export const getBestPerformingPlatformByUser = async (
+  interval: TimeInterval,
+  userId: string
+): Promise<string> => {
+  const clicks = await getClicksByIntervalAndUser(interval, userId);
+  const platformCounts = clicks.reduce(
+    (acc, click) => {
+      acc[click.platform] = (acc[click.platform] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  return Object.keys(platformCounts).reduce((a, b) =>
+    platformCounts[a] > platformCounts[b] ? a : b
+  );
+};
+
+export const getTop5BestPerformingPlatformsByUser = async (
+  interval: TimeInterval,
+  userId: string
+): Promise<string[]> => {
+  const clicks = await getClicksByIntervalAndUser(interval, userId);
+  const platformCounts = clicks.reduce(
+    (acc, click) => {
+      acc[click.platform] = (acc[click.platform] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  return Object.entries(platformCounts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 5)
+    .map(([platform]) => platform);
+};
+
+export const getTopCountryByUser = async (
+  interval: TimeInterval,
+  userId: string
+): Promise<string> => {
+  const clicks = await getClicksByIntervalAndUser(interval, userId);
+  const countryCounts = clicks.reduce(
+    (acc, click) => {
+      acc[click.country] = (acc[click.country] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  return Object.keys(countryCounts).reduce((a, b) =>
+    countryCounts[a] > countryCounts[b] ? a : b
+  );
+};
+
+export const getBestAverageTimeToEngageByUser = async (
+  interval: TimeInterval,
+  userId: string
+): Promise<number> => {
+  const clicks = await getClicksByIntervalAndUser(interval, userId);
+  const engagementTimes = clicks.map(click => click.clickedAt.getTime());
+  const intervals = engagementTimes.map(time =>
+    Math.floor(time / (3 * 60 * 60 * 1000))
+  );
+
+  const intervalCounts = intervals.reduce(
+    (acc, interval) => {
+      acc[interval] = (acc[interval] || 0) + 1;
+      return acc;
+    },
+    {} as Record<number, number>
+  );
+
+  const bestInterval = Object.keys(intervalCounts).reduce((a, b) =>
+    intervalCounts[parseInt(a)] > intervalCounts[parseInt(b)] ? a : b
+  );
+  return parseInt(bestInterval) * 3;
+};
+
+export const getClicksByGranularity = async (
+  interval: TimeInterval,
+  userId: string,
+  granularity: TimeGranularity
+): Promise<Record<string, number>> => {
+  const clicks = await getClicksByIntervalAndUser(interval, userId);
+  const formatMap = {
+    hour: 'HH',
+    day: 'dddd',
+    week: 'WW',
+    month: 'MM',
+  };
+
+  const format = formatMap[granularity];
+  const counts = clicks.reduce(
+    (acc, click) => {
+      const key = moment(click.clickedAt).format(format);
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  return counts;
 };
