@@ -1,7 +1,4 @@
-import dotenv from 'dotenv';
 import { cleanEnv, str, port } from 'envalid';
-
-dotenv.config();
 
 const validateEnv = () => {
   cleanEnv(process.env, {
@@ -10,6 +7,13 @@ const validateEnv = () => {
     MONGO_URI: str(),
     JWT_SECRET: str(),
     APP_URL: str(),
+    SESSION_SECRET: str(),
+    GOOGLE_CLIENT_ID: str(),
+    GOOGLE_CLIENT_SECRET: str(),
+    FACEBOOK_APP_ID: str(),
+    FACEBOOK_APP_SECRET: str(),
+    EMAIL_USER: str(),
+    EMAIL_PASS: str(),
   });
 };
 

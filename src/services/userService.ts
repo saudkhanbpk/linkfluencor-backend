@@ -1,5 +1,6 @@
 import User from '../models/User';
 import log from '../utils/logger';
+import { UserStatus } from '../types/enums';
 
 export const getAllUsers = async () => {
   try {
@@ -9,6 +10,27 @@ export const getAllUsers = async () => {
     return users;
   } catch (error: any) {
     log.error(`Error fetching users: ${error.message}`);
+    throw error;
+  }
+};
+
+export const activateUser = async (activationToken: string) => {
+  try {
+    log.info(`Fetching user with activation token: ${activationToken}`);
+    const user = await User.findOne({ activationToken });
+    if (user) {
+      log.info(`Fetched user: ${user}`);
+      user.status = UserStatus.Active;
+      log.info(`Activating user: ${user}`);
+      user.activationToken = null as any;
+    } else {
+      log.warn(`User with activation token: ${activationToken} not found`);
+    }
+    return user;
+  } catch (error: any) {
+    log.error(
+      `Error fetching user with activation token ${activationToken}: ${error.message}`
+    );
     throw error;
   }
 };

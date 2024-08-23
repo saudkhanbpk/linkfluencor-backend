@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
+import { config } from '../config/env';
 
 interface CustomRequest extends Request {
   user?: any;
@@ -18,7 +19,7 @@ export const authMiddleware = async (
   }
 
   try {
-    const decoded: any = jwt.verify(token, process.env.JWT_SECRET || '');
+    const decoded: any = jwt.verify(token, config.jwtSecret || '');
     req.user = await User.findById(decoded.id).select('-password');
     next();
   } catch (error) {

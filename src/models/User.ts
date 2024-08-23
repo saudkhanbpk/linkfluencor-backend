@@ -4,6 +4,7 @@ import { createSubscription } from '../services/subscriptionService';
 
 import { comparePassword } from '../utils/authUtils';
 import { UserRole, AuthProvider, UserStatus } from '../types/enums';
+import { config } from '../config/env';
 
 interface IUser extends Document {
   firstName: string;
@@ -16,6 +17,7 @@ interface IUser extends Document {
   photoPath: string | null;
   token: string | null;
   tokenExpiry: Date | null;
+  activationToken: { type: string; default: null };
   otpCode: string | null;
   otpExpiry: Date | null;
   role: UserRole;
@@ -81,7 +83,7 @@ userSchema.methods.verifyPassword = async function (
 userSchema.methods.generateAuthToken = function (): string {
   const token = jwt.sign(
     { _id: this._id, role: this.role },
-    process.env.JWT_SECRET as string,
+    config.jwtSecret as string,
     { expiresIn: '1h' }
   );
   return token;
