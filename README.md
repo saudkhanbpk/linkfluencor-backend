@@ -19,7 +19,7 @@ To get started with the Linkfluencer API, follow these steps:
 
 1. Clone the repository: `git clone https://github.com/linkfluencer/linkfluencer-api.git`
 2. Install the required dependencies: `npm install`
-3. Configure your API credentials: Open the `.env` file and enter your API key and secret.
+3. Configure your API credentials: Create the `.env.development` file.
 4. Start the server: `npm start`
 
 ## Usage

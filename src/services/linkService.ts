@@ -113,7 +113,6 @@ export const updateShortLink = async (
       log.warn(`Short URL: ${newShortUrl} is already in use`);
       throw new Error('Short URL already in use');
     }
-    console.log(newShortUrl, 'newShortUrl');
 
     link.shortUrl = newShortUrl;
     await link.save();
