@@ -356,6 +356,32 @@ export const getTopCountryByUser = async (
   }
 };
 
+export const getBestCityByUser = async (
+  interval: TimeInterval,
+  userId: string
+): Promise<string> => {
+  try {
+    log.info(`Getting best city for user: ${userId}`);
+    const clicks = await getClicksByIntervalAndUser(interval, userId);
+    const cityCounts = clicks.reduce(
+      (acc, click) => {
+        acc[click.city] = (acc[click.city] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    return Object.keys(cityCounts).reduce((a, b) =>
+      cityCounts[a] > cityCounts[b] ? a : b
+    );
+  } catch (error: any) {
+    log.error(
+      `Error getting best city for user: ${userId} in interval: ${interval}`
+    );
+    throw error;
+  }
+};
+
 export const getBestAverageTimeToEngageByUser = async (
   interval: TimeInterval,
   userId: string

@@ -7,6 +7,14 @@ import {
   deleteUserController,
   subscribeUserController,
   getClicksLeftController,
+  getClicksByIntervalAndUserController,
+  getTotalClicksByUserController,
+  getBestPerformingPlatformByUserController,
+  getTop5BestPerformingPlatformsByUserController,
+  getTopCountryByUserController,
+  getBestCityByUserController,
+  getBestAverageTimeToEngageByUserController,
+  getClicksGranularityByUserController,
 } from '../controllers/userController';
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { validateRequest } from '../middlewares/validateRequest';
@@ -43,12 +51,68 @@ router.post(
   authMiddleware,
   subscribeUserController
 );
-router.post(
+router.get(
   '/:id/clicks-left',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
   authMiddleware,
   getClicksLeftController
+);
+router.get(
+  '/:id/clicks-by-interval',
+  param('id').isMongoId().withMessage('Invalid user ID'),
+  validateRequest,
+  authMiddleware,
+  getClicksByIntervalAndUserController
+);
+router.get(
+  '/:id/total-clicks',
+  param('id').isMongoId().withMessage('Invalid user ID'),
+  validateRequest,
+  authMiddleware,
+  getTotalClicksByUserController
+);
+router.get(
+  '/:id/best-performing-platform',
+  param('id').isMongoId().withMessage('Invalid user ID'),
+  validateRequest,
+  authMiddleware,
+  getBestPerformingPlatformByUserController
+);
+router.get(
+  '/:id/top-5-best-performing-platforms',
+  param('id').isMongoId().withMessage('Invalid user ID'),
+  validateRequest,
+  authMiddleware,
+  getTop5BestPerformingPlatformsByUserController
+);
+router.get(
+  '/:id/top-country',
+  param('id').isMongoId().withMessage('Invalid user ID'),
+  validateRequest,
+  authMiddleware,
+  getTopCountryByUserController
+);
+router.get(
+  '/:id/top-city',
+  param('id').isMongoId().withMessage('Invalid user ID'),
+  validateRequest,
+  authMiddleware,
+  getBestCityByUserController
+);
+router.get(
+  '/:id/top-average-time-to-engage',
+  param('id').isMongoId().withMessage('Invalid user ID'),
+  validateRequest,
+  authMiddleware,
+  getBestAverageTimeToEngageByUserController
+);
+router.get(
+  '/:id/clicks-granularity',
+  param('id').isMongoId().withMessage('Invalid user ID'),
+  validateRequest,
+  authMiddleware,
+  getClicksGranularityByUserController
 );
 router.use(
   '/:id/links',

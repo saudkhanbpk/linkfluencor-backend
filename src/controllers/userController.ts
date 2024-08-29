@@ -6,6 +6,17 @@ import {
   deleteUser,
 } from '../services/userService';
 import { subscribe, getClicksLeft } from '../services/subscriptionService';
+import {
+  getClicksByIntervalAndUser,
+  getTotalClicksByUser,
+  getBestPerformingPlatformByUser,
+  getTop5BestPerformingPlatformsByUser,
+  getTopCountryByUser,
+  getBestCityByUser,
+  getBestAverageTimeToEngageByUser,
+  getClicksGranularityByUser,
+} from '../services/clickService';
+import { TimeGranularity, TimeInterval } from '../types/types';
 
 export const getUser = async (req: Request, res: Response) => {
   try {
@@ -76,6 +87,132 @@ export const getClicksLeftController = async (req: Request, res: Response) => {
     }
     const clicksLeft = await getClicksLeft(user._id);
     res.json({ clicksLeft });
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
+};
+
+export const getClicksByIntervalAndUserController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const interval = req.query.interval as TimeInterval;
+    const clicks = await getClicksByIntervalAndUser(interval, req.params.id);
+    res.json(clicks);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
+};
+
+export const getTotalClicksByUserController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const interval = req.query.interval as TimeInterval;
+    const clicks = await getTotalClicksByUser(interval, req.params.id);
+    res.json(clicks);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
+};
+
+export const getBestPerformingPlatformByUserController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const interval = req.query.interval as TimeInterval;
+    const platform = await getBestPerformingPlatformByUser(
+      interval,
+      req.params.id
+    );
+    res.json(platform);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
+};
+
+export const getTop5BestPerformingPlatformsByUserController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const interval = req.query.interval as TimeInterval;
+    const platforms = await getTop5BestPerformingPlatformsByUser(
+      interval,
+      req.params.id
+    );
+    res.json(platforms);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
+};
+
+export const getTopCountryByUserController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const interval = req.query.interval as TimeInterval;
+    const topCountry = await getTopCountryByUser(interval, req.params.id);
+    res.json(topCountry);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
+};
+
+export const getBestCityByUserController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const interval = req.query.interval as TimeInterval;
+    const topCity = await getBestCityByUser(interval, req.params.id);
+    res.json(topCity);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
+};
+
+export const getBestAverageTimeToEngageByUserController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const interval = req.query.interval as TimeInterval;
+    const bestAverageTimeToEngage = await getBestAverageTimeToEngageByUser(
+      interval,
+      req.params.id
+    );
+    res.json(bestAverageTimeToEngage);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
+};
+
+export const getClicksGranularityByUserController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const interval = req.query.interval as TimeInterval;
+    const granularity = req.query.granularity as TimeGranularity;
+    const clicks = await getClicksGranularityByUser(
+      interval,
+      req.params.id,
+      granularity
+    );
+    res.json(clicks);
   } catch (error) {
     res.status(500).json({ message: error });
   }
