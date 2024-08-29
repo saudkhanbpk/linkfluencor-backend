@@ -7,6 +7,6 @@ const router = Router();
 
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
-router.get('/l/:link', handleRedirect);
+router.get('/:link', handleRedirect);
 
 export default router;

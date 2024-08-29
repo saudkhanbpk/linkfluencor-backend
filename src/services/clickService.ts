@@ -67,6 +67,130 @@ export const saveClickInfo = async (
   }
 };
 
+export const getTopCountryByLink = async (linkId: string): Promise<string> => {
+  try {
+    log.info(`Getting top country for link: ${linkId}`);
+    const clicks = await Click.find({ link: linkId });
+    const countryCounts = clicks.reduce(
+      (acc, click) => {
+        acc[click.country] = (acc[click.country] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    return Object.keys(countryCounts).reduce((a, b) =>
+      countryCounts[a] > countryCounts[b] ? a : b
+    );
+  } catch (error: any) {
+    log.error(`Error getting top country for link: ${linkId}`);
+    throw error;
+  }
+};
+
+export const getTopCityByLink = async (linkId: string): Promise<string> => {
+  try {
+    log.info(`Getting top city for link: ${linkId}`);
+    const clicks = await Click.find({ link: linkId });
+    const cityCounts = clicks.reduce(
+      (acc, click) => {
+        acc[click.city] = (acc[click.city] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    return Object.keys(cityCounts).reduce((a, b) =>
+      cityCounts[a] > cityCounts[b] ? a : b
+    );
+  } catch (error: any) {
+    log.error(`Error getting top city for link: ${linkId}`);
+    throw error;
+  }
+};
+
+export const getBestAverageTimeToEngageByLink = async (
+  linkId: string
+): Promise<number> => {
+  try {
+    log.info(`Getting best average time to engage for link: ${linkId}`);
+    const clicks = await Click.find({ link: linkId });
+    const engagementTimes = clicks.map(click => click.clickedAt.getTime());
+    const intervals = engagementTimes.map(time =>
+      Math.floor(time / (3 * 60 * 60 * 1000))
+    );
+
+    const intervalCounts = intervals.reduce(
+      (acc, interval) => {
+        acc[interval] = (acc[interval] || 0) + 1;
+        return acc;
+      },
+      {} as Record<number, number>
+    );
+
+    const bestInterval = Object.keys(intervalCounts).reduce((a, b) =>
+      intervalCounts[parseInt(a)] > intervalCounts[parseInt(b)] ? a : b
+    );
+    return parseInt(bestInterval) * 3;
+  } catch (error: any) {
+    log.error(`Error getting best average time to engage for link: ${linkId}`);
+    throw error;
+  }
+};
+
+export const getClicksByIntervalAndLinkId = (
+  interval: TimeInterval,
+  linkId: string
+) => {
+  try {
+    log.info(`Getting clicks for link: ${linkId} in interval: ${interval}`);
+    const now = moment();
+    const startOfInterval = now.startOf(interval).toDate();
+    const endOfInterval = now.endOf(interval).toDate();
+
+    return Click.find({
+      link: linkId,
+      clickedAt: { $gte: startOfInterval, $lt: endOfInterval },
+    });
+  } catch (error: any) {
+    log.error(
+      `Error getting clicks for link: ${linkId} in interval: ${interval}`
+    );
+    throw error;
+  }
+};
+
+export const getClicksGranularityByLink = async (
+  linkId: string,
+  granularity: TimeGranularity
+) => {
+  try {
+    log.info(`Getting clicks by granularity for link: ${linkId}`);
+    const clicks = await Click.find({ link: linkId });
+    const formatMap = {
+      hour: 'HH',
+      day: 'dddd',
+      week: 'WW',
+      month: 'MM',
+    };
+
+    const format = formatMap[granularity];
+    const counts = clicks.reduce(
+      (acc, click) => {
+        const key = moment(click.clickedAt).format(format);
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
+
+    return counts;
+  } catch (error: any) {
+    log.error(`Error getting clicks by granularity for link: ${linkId}`);
+    throw error;
+  }
+};
+
 export const getClicksForLink = async (linkId: string) => {
   try {
     log.info(`Getting clicks for link: ${linkId}`);
@@ -264,7 +388,7 @@ export const getBestAverageTimeToEngageByUser = async (
   }
 };
 
-export const getClicksByGranularity = async (
+export const getClicksGranularityByUser = async (
   interval: TimeInterval,
   userId: string,
   granularity: TimeGranularity

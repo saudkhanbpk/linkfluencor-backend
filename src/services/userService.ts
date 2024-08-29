@@ -84,3 +84,12 @@ export const deleteUser = async (id: string) => {
     throw error;
   }
 };
+
+export const checkUserBalance = (
+  userBalance: number,
+  planPrice: number
+): void => {
+  if (userBalance < planPrice) {
+    throw new Error('Insufficient balance for the selected plan');
+  }
+};

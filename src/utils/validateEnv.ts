@@ -14,6 +14,14 @@ const validateEnv = () => {
     FACEBOOK_APP_SECRET: str(),
     EMAIL_USER: str(),
     EMAIL_PASS: str(),
+    PLAN_FREE_PRICE: str(),
+    PLAN_FREE_CLICKS_LIMIT: str(),
+    PLAN_STARTER_PRICE: str(),
+    PLAN_STARTER_CLICKS_LIMIT: str(),
+    PLAN_GROW_PRICE: str(),
+    PLAN_GROW_CLICKS_LIMIT: str(),
+    PLAN_SCALE_PRICE: str(),
+    PLAN_SCALE_CLICKS_LIMIT: str(),
   });
 };
 

@@ -21,4 +21,21 @@ export const config = {
   facebookAppSecret: process.env.FACEBOOK_APP_SECRET,
   emailUser: process.env.EMAIL_USER,
   emailPass: process.env.EMAIL_PASS,
+  planFreePrice: parseFloat(process.env.PLAN_FREE_PRICE || '0'),
+  planFreeClicksLimit: parseInt(process.env.PLAN_FREE_CLICKS_LIMIT || '0', 10),
+  planStarterPrice: parseFloat(process.env.PLAN_STARTER_PRICE || '49.99'),
+  planStarterClicksLimit: parseInt(
+    process.env.PLAN_STARTER_CLICKS_LIMIT || '50000',
+    10
+  ),
+  planGrowPrice: parseFloat(process.env.PLAN_GROW_PRICE || '99.99'),
+  planGrowClicksLimit: parseInt(
+    process.env.PLAN_GROW_CLICKS_LIMIT || '100000',
+    10
+  ),
+  planScalePrice: parseFloat(process.env.PLAN_SCALE_PRICE || '199.99'),
+  planScaleClicksLimit: parseInt(
+    process.env.PLAN_SCALE_CLICKS_LIMIT || '250000',
+    10
+  ),
 };

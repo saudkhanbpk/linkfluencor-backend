@@ -27,6 +27,7 @@ interface IUser extends Document {
   verifyPassword: (_password: string) => Promise<boolean>;
   generateAuthToken: () => string;
   subscription: Schema.Types.ObjectId | null;
+  balance: number;
   createdAt: Date;
   updatedAt: Date | null;
 }
@@ -72,6 +73,7 @@ const userSchema = new Schema<IUser>({
     ref: 'Subscription',
     default: null,
   },
+  balance: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: null },
 });

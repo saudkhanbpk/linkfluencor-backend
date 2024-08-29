@@ -18,7 +18,20 @@ export interface ILink extends Document {
 const linkSchema = new Schema<ILink>(
   {
     originalUrl: { type: String, required: true },
-    shortUrl: { type: String, required: true, unique: true },
+    shortUrl: {
+      type: String,
+      required: true,
+      unique: true,
+      validate: {
+        validator: function (value: string) {
+          const forbiddenValues = ['user', 'auth'].map(val =>
+            val.toLowerCase()
+          );
+          return !forbiddenValues.includes(value.toLowerCase());
+        },
+        message: (props: any) => `${props.value} is not a valid short URL!`,
+      },
+    },
     user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     team: { type: Schema.Types.ObjectId, ref: 'Team', default: null },
     clicks: { type: Number, default: 0 },

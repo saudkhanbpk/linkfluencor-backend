@@ -8,3 +8,8 @@ export interface BulkLinkData {
   linkTag4?: string | null;
   linkTag5?: string | null;
 }
+
+export interface PlanDetails {
+  price: number;
+  clicksLimit: number;
+}

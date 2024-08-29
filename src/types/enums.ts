@@ -43,3 +43,9 @@ export enum BrandMemberRole {
   Manager = 'manager',
   Admin = 'admin',
 }
+
+export enum TransactionStatus {
+  Pending = 'pending',
+  Completed = 'completed',
+  Failed = 'failed',
+}

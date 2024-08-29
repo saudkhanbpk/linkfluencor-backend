@@ -7,7 +7,12 @@ import { detectTargetSite } from '../utils/urlUtils';
 import { extractLinksFromFile } from '../utils/uploadUtils';
 import { BulkLinkData } from '../types/interfaces';
 
-export const getAllLinksForUser = async (userId: string) => {
+export const getAllLinksForUser = async (
+  userId: string,
+  sortBy: string = 'topLinks',
+  page: number = 1,
+  limit: number = 10
+) => {
   try {
     log.info(`Fetching all links for user with id: ${userId}`);
 
@@ -22,7 +27,20 @@ export const getAllLinksForUser = async (userId: string) => {
       throw new Error('User not found');
     }
 
-    const links = await Link.find({ user: user._id });
+    const sortOptions: { [key: string]: any } = {
+      topLinks: { clicks: -1 },
+      newlyAdded: { createdAt: -1 },
+      oldLinks: { createdAt: 1 },
+      affiliatedLinks: { isAffiliated: -1 },
+    };
+
+    const sort = sortOptions[sortBy] || sortOptions['topLinks'];
+
+    const links = await Link.find({ user: user._id })
+      .sort(sort)
+      .skip((page - 1) * limit)
+      .limit(limit);
+
     log.info(`Found ${links.length} links for user ID: ${userId}`);
     return links;
   } catch (error: any) {
@@ -77,6 +95,52 @@ export const createShortLink = async (
   }
 };
 
+export const updateLink = async (
+  linkId: string,
+  originalUrl?: string,
+  shortUrl?: string,
+  tags?: string[]
+): Promise<ILink> => {
+  try {
+    log.info(`Updating short link with id: ${linkId}`);
+    const link = await Link.findById(linkId);
+
+    if (!link) {
+      log.warn(`Link with id: ${linkId} not found`);
+      throw new Error('Link not found');
+    }
+
+    if (originalUrl) {
+      link.originalUrl = originalUrl;
+    }
+
+    if (shortUrl) {
+      const existingLink = await Link.findOne({ shortUrl });
+
+      if (existingLink) {
+        log.warn(`Short URL: ${shortUrl} is already in use`);
+        throw new Error('Short URL already in use');
+      }
+
+      link.shortUrl = shortUrl;
+    }
+
+    if (tags) {
+      link.tags = tags;
+    }
+
+    await link.save();
+    log.info(
+      `Short link with id: ${linkId} updated to new short URL: ${shortUrl}`
+    );
+
+    return link;
+  } catch (error: any) {
+    log.error(`Error updating short link with id: ${linkId}: ${error.message}`);
+    throw error;
+  }
+};
+
 export const updateShortLink = async (
   userId: string,
   linkId: string,
@@ -125,6 +189,25 @@ export const updateShortLink = async (
     log.error(
       `Error updating short link for user with id: ${userId}: ${error.message}`
     );
+    throw error;
+  }
+};
+
+export const updateTags = async (linkId: string, tags: string[]) => {
+  try {
+    log.info(`Updating tags for link with id: ${linkId}`);
+    const link = await Link.findById(linkId);
+
+    if (!link) {
+      log.warn(`Link with id: ${linkId} not found`);
+      throw new Error('Link not found');
+    }
+
+    link.tags = tags;
+    await link.save();
+    log.info(`Tags updated for link with id: ${linkId}`);
+  } catch (error: any) {
+    log.error(`Error updating tags for link with id: ${linkId}`);
     throw error;
   }
 };
@@ -193,6 +276,83 @@ export const bulkCreateShortLinks = async (
     });
   } catch (error: any) {
     log.error('Error while uploading bulk');
+    throw error;
+  }
+};
+
+export const deleteLink = async (userId: string, linkId: string) => {
+  try {
+    log.info(`Deleting link with id: ${linkId} for user with id: ${userId}`);
+
+    if (
+      !mongoose.Types.ObjectId.isValid(userId) ||
+      !mongoose.Types.ObjectId.isValid(linkId)
+    ) {
+      log.error('Invalid user ID or link ID format');
+      throw new Error('Invalid user ID or link ID format');
+    }
+
+    const link = await Link.findById(linkId);
+
+    if (!link) {
+      log.warn(`Link with id: ${linkId} not found`);
+      throw new Error('Link not found');
+    }
+
+    if (link.user.toString() !== userId) {
+      log.warn(
+        `User with id: ${userId} is not authorized to delete link with id: ${linkId}`
+      );
+      throw new Error('Unauthorized');
+    }
+
+    await link.remove();
+    log.info(`Link with id: ${linkId} deleted successfully`);
+  } catch (error: any) {
+    log.error(
+      `Error deleting link with id: ${linkId} for user with id: ${userId}`
+    );
+    throw error;
+  }
+};
+
+export const deleteMultipleLinks = async (
+  userId: string,
+  linkIds: string[]
+) => {
+  try {
+    log.info(
+      `Deleting multiple links for user with id: ${userId}: ${linkIds.join(
+        ', '
+      )}`
+    );
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      log.error('Invalid user ID format');
+      throw new Error('Invalid user ID format');
+    }
+
+    const links = await Link.find({ _id: { $in: linkIds } });
+
+    if (links.length !== linkIds.length) {
+      log.warn('Some links not found');
+      throw new Error('Some links not found');
+    }
+
+    links.forEach(async link => {
+      if (link.user.toString() !== userId) {
+        log.warn(
+          `User with id: ${userId} is not authorized to delete link with id: ${link._id}`
+        );
+        throw new Error('Unauthorized');
+      }
+
+      await link.remove();
+    });
+
+    log.info(`Links deleted successfully for user with id: ${userId}`);
+  } catch (error: any) {
+    log.error(`Error deleting links for user with id: ${userId}`);
     throw error;
   }
 };
