@@ -3,6 +3,7 @@ import {
   getAllLinksForUser,
   createShortLink,
   updateShortLink,
+  bulkCreateShortLinks,
 } from '../services/linkService';
 
 export const getAllLinksForUserController = async (
@@ -50,4 +51,26 @@ export const updateShortLinkController = async (
   } catch (error: any) {
     next(error);
   }
+};
+
+export const bulkUpload = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.file) {
+      return res.status(400).send('No file uploaded.');
+    }
+    const userId = req.params.id;
+
+    await bulkCreateShortLinks(userId, req.file.buffer, req.file.originalname);
+
+    res.status(200).json({
+      message: 'Links created successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
+  return;
 };

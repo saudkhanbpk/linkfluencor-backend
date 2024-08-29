@@ -4,6 +4,8 @@ import Link, { ILink } from '../models/Link';
 import User from '../models/User';
 import { generateShortUrl } from '../utils/urlGenerator';
 import { detectTargetSite } from '../utils/urlUtils';
+import { extractLinksFromFile } from '../utils/uploadUtils';
+import { BulkLinkData } from '../types/interfaces';
 
 export const getAllLinksForUser = async (userId: string) => {
   try {
@@ -33,7 +35,10 @@ export const getAllLinksForUser = async (userId: string) => {
 
 export const createShortLink = async (
   userId: string,
-  originalUrl: string
+  originalUrl: string,
+  prefixUrl?: string | null,
+  suffix?: string | null,
+  tagsArray?: string[] | null
 ): Promise<ILink> => {
   try {
     log.info(`Creating short link for user with id: ${userId}`);
@@ -44,8 +49,11 @@ export const createShortLink = async (
       throw new Error('User not found');
     }
 
-    const shortUrl = generateShortUrl();
+    const shortUrl = suffix ?? generateShortUrl();
+    const prefix = prefixUrl ?? '';
+    const tags = tagsArray ?? [];
     const targetSite = detectTargetSite(originalUrl);
+
     log.info(`Generated short URL: ${shortUrl}`);
 
     const newLink = new Link({
@@ -53,6 +61,8 @@ export const createShortLink = async (
       originalUrl,
       shortUrl,
       targetSite,
+      prefix,
+      tags,
     });
 
     await newLink.save();
@@ -152,6 +162,38 @@ export const incrementLinkClicks = async (linkId: string) => {
     log.info(`Clicks incremented for link with id: ${linkId}`);
   } catch (error: any) {
     log.error(`Error incrementing clicks for link with id: ${linkId}`);
+    throw error;
+  }
+};
+
+export const bulkCreateShortLinks = async (
+  userId: string,
+  fileBuffer: Buffer,
+  fileName: string
+): Promise<void> => {
+  const links: BulkLinkData[] = extractLinksFromFile(fileBuffer, fileName);
+
+  if (!Array.isArray(links) || links.length === 0) {
+    throw new Error('No links provided');
+  }
+  try {
+    const shortLinkPromises = links.map(link =>
+      createShortLink(userId, link.originalUrl, link.prefix, link.suffix, [
+        link.linkTag1 ?? '',
+        link.linkTag2 ?? '',
+        link.linkTag3 ?? '',
+        link.linkTag4 ?? '',
+        link.linkTag5 ?? '',
+      ])
+    );
+
+    await Promise.all(shortLinkPromises).then(() => {
+      log.info(
+        `File successfully uploaded for user ${userId} and filename: ${fileName}`
+      );
+    });
+  } catch (error: any) {
+    log.error('Error while uploading bulk');
     throw error;
   }
 };

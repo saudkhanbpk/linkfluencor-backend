@@ -8,6 +8,7 @@ export const handleRedirect = async (
 ) => {
   try {
     const originalUrl = await handleClick(req);
+    console.log('Redirecting to:', originalUrl);
 
     res.redirect(originalUrl);
   } catch (err) {
