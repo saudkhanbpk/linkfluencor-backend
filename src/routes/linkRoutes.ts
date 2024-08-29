@@ -22,7 +22,12 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.get('/', getAllLinksForUserController);
 router.post('/', createShortLinkController);
-router.delete('/:linkId', deleteLinkController);
+router.delete(
+  '/:linkId',
+  param('linkId').isMongoId().withMessage('Invalid link ID'),
+  validateRequest,
+  deleteLinkController
+);
 router.delete('/', deleteMultipleLinksController);
 router.post('/upload', upload.single('file'), bulkUpload);
 router.put(
@@ -31,16 +36,40 @@ router.put(
   validateRequest,
   updateShortLinkController
 );
-router.get('/:linkId/clicks', getClicksForLinkController);
-router.get('/:linkId/clicks-trend', getClicksTrendForLinkController);
-router.get('/:linkId/top-country', getTopCountryByLinkController);
-router.get('/:linkId/top-city', getTopCityByLinkController);
+router.get(
+  '/:linkId/clicks',
+  param('linkId').isMongoId().withMessage('Invalid link ID'),
+  validateRequest,
+  getClicksForLinkController
+);
+router.get(
+  '/:linkId/clicks-trend',
+  param('linkId').isMongoId().withMessage('Invalid link ID'),
+  validateRequest,
+  getClicksTrendForLinkController
+);
+router.get(
+  '/:linkId/top-country',
+  param('linkId').isMongoId().withMessage('Invalid link ID'),
+  validateRequest,
+  getTopCountryByLinkController
+);
+router.get(
+  '/:linkId/top-city',
+  param('linkId').isMongoId().withMessage('Invalid link ID'),
+  validateRequest,
+  getTopCityByLinkController
+);
 router.get(
   '/:linkId/top-average-time-to-engage',
+  param('linkId').isMongoId().withMessage('Invalid link ID'),
+  validateRequest,
   getBestAverageTimeToEngageByLinkController
 );
 router.get(
   '/:linkId/clicks-by-interval',
+  param('linkId').isMongoId().withMessage('Invalid link ID'),
+  validateRequest,
   getClicksByIntervalAndLinkIdController
 );
 
