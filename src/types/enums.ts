@@ -38,8 +38,8 @@ export enum SubscriptionPlan {
   Scale = 'scale',
 }
 
-export enum TeamMemberRole {
+export enum BrandMemberRole {
+  User = 'user',
+  Manager = 'manager',
   Admin = 'admin',
-  Editor = 'editor',
-  Viewer = 'viewer',
 }

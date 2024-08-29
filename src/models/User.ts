@@ -1,17 +1,18 @@
 import { Schema, model, Document } from 'mongoose';
 import jwt from 'jsonwebtoken';
 import { createSubscription } from '../services/subscriptionService';
-
 import { comparePassword } from '../utils/authUtils';
 import { UserRole, AuthProvider, UserStatus } from '../types/enums';
 import { config } from '../config/env';
+import { createBrand } from '../services/brandService';
 
 interface IUser extends Document {
   firstName: string;
   lastName: string;
   email: string;
   password: string;
-  team: Schema.Types.ObjectId | null;
+  brand: Schema.Types.ObjectId | null;
+  isBrandCreated: boolean;
   emailVerifiedAt: Date | null;
   status: UserStatus;
   photoPath: string | null;
@@ -46,7 +47,8 @@ const userSchema = new Schema<IUser>({
       return this.authProvider === AuthProvider.Local;
     },
   },
-  team: { type: Schema.Types.ObjectId, ref: 'Team', default: null },
+  brand: { type: Schema.Types.ObjectId, ref: 'Brand', default: null },
+  isBrandCreated: { type: Boolean, default: false },
   emailVerifiedAt: { type: Date, default: null },
   status: {
     type: String,
@@ -104,6 +106,15 @@ userSchema.pre('save', function (next: (_err?: Error) => void) {
 });
 
 userSchema.post('save', async function (user: IUser) {
+  if (user.role === UserRole.Brand && !user.isBrandCreated) {
+    const brand = await createBrand(user._id);
+
+    user.brand = brand._id;
+    user.isBrandCreated = true;
+
+    await user.save();
+  }
+
   if (!user.subscription) {
     const subscription = await createSubscription(user._id);
     user.subscription = subscription._id;
