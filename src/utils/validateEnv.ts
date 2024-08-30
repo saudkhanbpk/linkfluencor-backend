@@ -22,6 +22,7 @@ const validateEnv = () => {
     PLAN_GROW_CLICKS_LIMIT: str(),
     PLAN_SCALE_PRICE: str(),
     PLAN_SCALE_CLICKS_LIMIT: str(),
+    ALLOWED_ORIGINS: str(),
   });
 };
 

@@ -38,4 +38,5 @@ export const config = {
     process.env.PLAN_SCALE_CLICKS_LIMIT || '250000',
     10
   ),
+  allowedOrigins: process.env.ALLOWED_ORIGINS,
 };
