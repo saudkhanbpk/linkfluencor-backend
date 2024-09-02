@@ -93,3 +93,22 @@ export const checkUserBalance = (
     throw new Error('Insufficient balance for the selected plan');
   }
 };
+
+export const getProfileCompletion = async (id: string) => {
+  try {
+    log.info(`Fetching user with id: ${id}`);
+    const user = await User.findById(id);
+    if (user) {
+      log.info(`Fetched user: ${user}`);
+      const completion = user.calculateProfileCompletion();
+      log.info(`Profile completion for user ${id}: ${completion}%`);
+      return completion;
+    } else {
+      log.warn(`User with id: ${id} not found`);
+      return null;
+    }
+  } catch (error: any) {
+    log.error(`Error fetching user with id ${id}: ${error.message}`);
+    throw error;
+  }
+};

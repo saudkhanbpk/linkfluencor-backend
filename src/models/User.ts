@@ -1,4 +1,5 @@
 import { Schema, model, Document } from 'mongoose';
+import { parsePhoneNumberFromString } from 'libphonenumber-js';
 import jwt from 'jsonwebtoken';
 import { createSubscription } from '../services/subscriptionService';
 import { comparePassword } from '../utils/authUtils';
@@ -30,6 +31,13 @@ interface IUser extends Document {
   balance: number;
   createdAt: Date;
   updatedAt: Date | null;
+  gender: string | null;
+  country: string | null;
+  city: string | null;
+  mobileNumber: string | null;
+  address: string | null;
+  birthDate: Date | null;
+  calculateProfileCompletion: () => number;
 }
 
 const userSchema = new Schema<IUser>({
@@ -43,7 +51,6 @@ const userSchema = new Schema<IUser>({
   },
   password: {
     type: String,
-    // eslint-disable-next-line no-unused-vars
     required: function (this: IUser) {
       return this.authProvider === AuthProvider.Local;
     },
@@ -54,7 +61,7 @@ const userSchema = new Schema<IUser>({
   status: {
     type: String,
     enum: Object.values(UserStatus),
-    default: UserStatus.Inactive,
+    default: UserStatus.Active,
   },
   photoPath: { type: String, default: null },
   token: { type: String, default: null },
@@ -76,6 +83,23 @@ const userSchema = new Schema<IUser>({
   balance: { type: Number, default: 0 },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: null },
+  gender: { type: String, default: null },
+  country: { type: String, default: null },
+  city: { type: String, default: null },
+  mobileNumber: {
+    type: String,
+    default: null,
+    validate: {
+      validator: function (value: string | null) {
+        if (!value) return true;
+        const phoneNumber = parsePhoneNumberFromString(value);
+        return phoneNumber ? phoneNumber.isValid() : false;
+      },
+      message: (props: any) => `${props.value} is not a valid phone number!`,
+    },
+  },
+  address: { type: String, default: null },
+  birthDate: { type: Date, default: null },
 });
 
 userSchema.methods.verifyPassword = async function (
@@ -91,6 +115,22 @@ userSchema.methods.generateAuthToken = function (): string {
     { expiresIn: '1h' }
   );
   return token;
+};
+
+userSchema.methods.calculateProfileCompletion = function (): number {
+  const fields = [
+    'firstName',
+    'lastName',
+    'gender',
+    'email',
+    'country',
+    'city',
+    'mobileNumber',
+    'address',
+    'birthDate',
+  ];
+  const filledFields = fields.filter(field => this[field]);
+  return (filledFields.length / fields.length) * 100;
 };
 
 userSchema.pre('save', function (next: (_err?: Error) => void) {

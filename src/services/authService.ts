@@ -7,7 +7,7 @@ import {
   generateActivationToken,
 } from '../utils/authUtils';
 import log from '../utils/logger';
-import { sendActivationEmail } from '../utils/emailUtils';
+import { sendActivationEmail, sendWelcomeEmail } from '../utils/emailUtils';
 
 export const registerUser = async (
   firstName: string,
@@ -51,6 +51,7 @@ export const registerUser = async (
     await user.save();
     log.info(`User saved ${email}`);
     await sendActivationEmail(user.email, activationToken);
+    await sendWelcomeEmail(user.email);
     log.info(`Activation email sent to ${email}`);
 
     return { user, token: user.generateAuthToken() };
