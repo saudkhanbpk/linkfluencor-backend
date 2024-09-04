@@ -3,14 +3,20 @@ import moment from 'moment';
 import geoip from 'geoip-lite';
 import log from '../utils/logger';
 import requestIp from 'request-ip';
-import { getOriginalUrl, incrementLinkClicks } from '../services/linkService';
+import {
+  getAllLinksForUser,
+  getOriginalUrl,
+  incrementLinkClicks,
+} from '../services/linkService';
 import {
   getClicksLeft,
   incrementClicks,
 } from '../services/subscriptionService';
 import Click from '../models/Click';
-import { ILink } from '../models/Link';
+import { ILink } from '../interfaces/Link';
+import { getUserById } from '../services/userService';
 import { TimeInterval, TimeGranularity } from '../types/types';
+import { IClick } from 'interfaces/Click';
 
 export const handleClick = async (req: Request) => {
   try {
@@ -22,13 +28,20 @@ export const handleClick = async (req: Request) => {
       log.error('Invalid short url');
       throw new Error('Invalid short url');
     }
-    const clicksLeft = getClicksLeft(link.user);
+
+    const user = await getUserById(link.createdBy.toString());
+    if (!user) {
+      log.error('Invalid user');
+      throw new Error('Invalid user');
+    }
+
+    const clicksLeft = await getClicksLeft(link.createdBy, user.role);
 
     if (!clicksLeft) {
       log.warn('No clicks left');
       throw new Error('No clicks left');
     }
-    await incrementClicks(link.user);
+    await incrementClicks(link.createdBy, user.role);
     await incrementLinkClicks(link._id);
 
     await saveClickInfo(req, shortUrl, link);
@@ -50,7 +63,7 @@ export const saveClickInfo = async (
     const ipAddress = requestIp.getClientIp(req);
     const geo = geoip.lookup(ipAddress as string);
     const click = new Click({
-      link: link._id,
+      linkId: link._id,
       ipAddress: ipAddress,
       userAgent: req.headers['user-agent'],
       platform: req.headers['sec-ch-ua-platform'] ?? 'Unknown',
@@ -70,7 +83,7 @@ export const saveClickInfo = async (
 export const getTopCountryByLink = async (linkId: string): Promise<string> => {
   try {
     log.info(`Getting top country for link: ${linkId}`);
-    const clicks = await Click.find({ link: linkId });
+    const clicks = await Click.find({ linkId });
     const countryCounts = clicks.reduce(
       (acc, click) => {
         acc[click.country] = (acc[click.country] || 0) + 1;
@@ -91,7 +104,7 @@ export const getTopCountryByLink = async (linkId: string): Promise<string> => {
 export const getTopCityByLink = async (linkId: string): Promise<string> => {
   try {
     log.info(`Getting top city for link: ${linkId}`);
-    const clicks = await Click.find({ link: linkId });
+    const clicks = await Click.find({ linkId });
     const cityCounts = clicks.reduce(
       (acc, click) => {
         acc[click.city] = (acc[click.city] || 0) + 1;
@@ -114,7 +127,7 @@ export const getBestAverageTimeToEngageByLink = async (
 ): Promise<number> => {
   try {
     log.info(`Getting best average time to engage for link: ${linkId}`);
-    const clicks = await Click.find({ link: linkId });
+    const clicks = await Click.find({ linkId });
     const engagementTimes = clicks.map(click => click.clickedAt.getTime());
     const intervals = engagementTimes.map(time =>
       Math.floor(time / (3 * 60 * 60 * 1000))
@@ -149,7 +162,7 @@ export const getClicksByIntervalAndLinkId = (
     const endOfInterval = now.endOf(interval).toDate();
 
     return Click.find({
-      link: linkId,
+      linkId,
       clickedAt: { $gte: startOfInterval, $lt: endOfInterval },
     });
   } catch (error: any) {
@@ -166,7 +179,7 @@ export const getClicksGranularityByLink = async (
 ) => {
   try {
     log.info(`Getting clicks by granularity for link: ${linkId}`);
-    const clicks = await Click.find({ link: linkId });
+    const clicks = await Click.find({ linkId });
     const formatMap = {
       hour: 'HH',
       day: 'dddd',
@@ -194,7 +207,7 @@ export const getClicksGranularityByLink = async (
 export const getClicksForLink = async (linkId: string) => {
   try {
     log.info(`Getting clicks for link: ${linkId}`);
-    const clicks = await Click.find({ link: linkId });
+    const clicks = await Click.find({ linkId });
     return clicks;
   } catch (error: any) {
     log.error(`Error getting clicks for link: ${linkId}`);
@@ -213,12 +226,12 @@ export const getLinkClicksTrend = async (linkId: string): Promise<number> => {
     log.info(`Calculating click trend for linkId: ${linkId}`);
 
     const clicksLastThreeDays = await Click.countDocuments({
-      link: linkId,
+      linkId,
       createdAt: { $gte: startOfThreeDaysAgo, $lt: startOfToday },
     });
 
     const clicksPreviousThreeDays = await Click.countDocuments({
-      link: linkId,
+      linkId,
       createdAt: { $gte: startOfSixDaysAgo, $lt: endOfSixDaysAgo },
     });
 
@@ -247,10 +260,25 @@ export const getClicksByIntervalAndUser = async (
     const startOfInterval = now.startOf(interval).toDate();
     const endOfInterval = now.endOf(interval).toDate();
 
-    return await Click.find({
-      user: userId,
-      clickedAt: { $gte: startOfInterval, $lt: endOfInterval },
-    });
+    const user = await getUserById(userId);
+
+    if (!user) {
+      log.error(`User not found: ${userId}`);
+      throw new Error('User not found');
+    }
+    const userLinks = await getAllLinksForUser(userId);
+
+    let clicks: IClick[] = [];
+
+    for (const link of userLinks) {
+      const linkClicks = await Click.find({
+        linkId: link._id,
+        clickedAt: { $gte: startOfInterval, $lt: endOfInterval },
+      });
+      clicks = clicks.concat(linkClicks);
+    }
+
+    return clicks;
   } catch (error: any) {
     log.error(
       `Error getting clicks for user: ${userId} in interval: ${interval}`

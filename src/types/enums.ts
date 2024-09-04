@@ -2,7 +2,7 @@
 
 export enum UserRole {
   User = 'user',
-  Brand = 'brand',
+  BrandUser = 'brandUser',
   Admin = 'admin',
 }
 
@@ -29,6 +29,11 @@ export enum PaymentStatus {
   Pending = 'pending',
   Completed = 'completed',
   Failed = 'failed',
+}
+
+export enum PaymentMethod {
+  Card = 'card',
+  Paypal = 'paypal',
 }
 
 export enum SubscriptionPlan {

@@ -22,7 +22,7 @@ import linkRoutes from './linkRoutes';
 
 const router = Router();
 
-router.get('/', authMiddleware, getAllUsersController);
+router.get('/', getAllUsersController);
 router.get(
   '/:id',
   param('id').isMongoId().withMessage('Invalid user ID'),
@@ -118,7 +118,7 @@ router.use(
   '/:id/links',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   linkRoutes
 );
 

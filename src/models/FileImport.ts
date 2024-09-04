@@ -1,13 +1,6 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { FileImportStatus } from '../types/enums';
-
-export interface IFileImport extends Document {
-  user: Schema.Types.ObjectId;
-  filePath: string;
-  status: FileImportStatus;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { IFileImport } from 'interfaces/FileImport';
 
 const fileImportSchema = new Schema<IFileImport>(
   {

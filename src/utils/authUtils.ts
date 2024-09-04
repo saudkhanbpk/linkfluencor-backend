@@ -2,6 +2,20 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { config } from '../config/env';
+import { AuthProvider } from '../types/enums';
+
+export const handlePasswordHashing = async (
+  password: string,
+  authProvider: AuthProvider
+) => {
+  if (authProvider === AuthProvider.Local) {
+    if (!password) {
+      throw new Error('Password is required for internal authentication');
+    }
+    return await hashPassword(password);
+  }
+  return null;
+};
 
 export const hashPassword = async (password: string) => {
   return await bcrypt.hash(password, 10);
@@ -19,6 +33,7 @@ export const generateToken = (userId: string) => {
     expiresIn: '1h',
   });
 };
+
 export const generateActivationToken = () => {
   return crypto.randomBytes(32).toString('hex');
 };

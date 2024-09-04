@@ -5,7 +5,10 @@ import {
   updateUser,
   deleteUser,
 } from '../services/userService';
-import { subscribe, getClicksLeft } from '../services/subscriptionService';
+import {
+  createSubscription,
+  getClicksLeft,
+} from '../services/subscriptionService';
 import {
   getClicksByIntervalAndUser,
   getTotalClicksByUser,
@@ -72,7 +75,7 @@ export const subscribeUserController = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    return await subscribe(user._id, req.body.plan);
+    return await createSubscription(user._id, user.role, req.body.plan);
   } catch (error) {
     res.status(500).json({ message: error });
   }
@@ -85,7 +88,7 @@ export const getClicksLeftController = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    const clicksLeft = await getClicksLeft(user._id);
+    const clicksLeft = await getClicksLeft(user._id, user.role);
     res.json({ clicksLeft });
   } catch (error) {
     res.status(500).json({ message: error });

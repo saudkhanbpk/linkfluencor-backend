@@ -1,59 +1,65 @@
 import User from '../models/User';
-import { AuthProvider, UserStatus } from '../types/enums';
 import {
-  hashPassword,
+  AuthProvider,
+  BrandMemberRole,
+  SubscriptionPlan,
+  UserRole,
+} from '../types/enums';
+import {
   comparePassword,
   generateToken,
   generateActivationToken,
+  handlePasswordHashing,
 } from '../utils/authUtils';
 import log from '../utils/logger';
-import { sendActivationEmail, sendWelcomeEmail } from '../utils/emailUtils';
+import { addUserToBrand, handleBrandAssociation } from './brandService';
+import { createUser, validateUserExistence } from '../services/userService';
+import { handleEmailNotifications } from '../utils/emailUtils';
+import { createSubscription } from '../services/subscriptionService';
 
 export const registerUser = async (
-  firstName: string,
-  lastName: string,
   email: string,
   password: string,
-  authProvider: string,
-  role: string
+  authProvider: AuthProvider,
+  authProviderId: string,
+  role: UserRole,
+  brandName: string
 ) => {
   try {
     log.info(`Registering new user: ${email}`);
 
-    const existingUser = await User.findOne({ email });
+    await validateUserExistence(email);
 
-    if (existingUser) {
-      log.warn(`User already exists: ${email}`);
-      throw new Error('User already exists');
-    }
+    const hashedPassword = await handlePasswordHashing(password, authProvider);
 
-    let hashedPassword = null;
+    const brand =
+      role === UserRole.BrandUser
+        ? await handleBrandAssociation(brandName, email)
+        : null;
 
-    if (authProvider === AuthProvider.Local) {
-      if (!password) {
-        throw new Error('Password is required for internal authentication');
-      }
-      hashedPassword = await hashPassword(password);
-    }
-
-    const activationToken = generateActivationToken();
-
-    const user = new User({
-      firstName,
-      lastName,
+    const user = await createUser(
       email,
-      password: hashedPassword,
-      status: UserStatus.Inactive,
+      hashedPassword,
       authProvider,
+      authProviderId,
       role,
-    });
+      brand ? brand._id : null,
+      generateActivationToken()
+    );
 
-    await user.save();
-    log.info(`User saved ${email}`);
-    await sendActivationEmail(user.email, activationToken);
-    await sendWelcomeEmail(user.email);
-    log.info(`Activation email sent to ${email}`);
+    if (brand) {
+      await addUserToBrand(user.id, brand.id, BrandMemberRole.Admin);
+    }
 
+    await createSubscription(user.id, role, SubscriptionPlan.Free);
+
+    await handleEmailNotifications(
+      user.email,
+      user.status,
+      user.activationToken
+    );
+
+    log.info(`User registered successfully: ${user.email}`);
     return { user, token: user.generateAuthToken() };
   } catch (error: any) {
     log.error(`Error registering user: ${error.message}`);
@@ -65,26 +71,24 @@ export const googleSignIn = async (profile: any) => {
   try {
     log.info(`Signing in user via Google: ${profile.emails[0].value}`);
 
-    let user = await User.findOne({ email: profile.emails[0].value });
+    const usr = await User.findOne({ email: profile.emails[0].value });
 
-    if (!user) {
+    if (!usr) {
       log.info(`User not found, creating new user: ${profile.emails[0].value}`);
-      user = new User({
-        firstName: profile.name.givenName,
-        lastName: profile.name.familyName,
-        email: profile.emails[0].value,
-        authProvider: AuthProvider.Google,
-        AuthProviderId: profile.id,
-        role: 'user',
-        status: UserStatus.Inactive,
-      });
-
-      await user.save();
+      const { user, token } = await registerUser(
+        profile.emails[0].value,
+        '',
+        AuthProvider.Google,
+        profile.id,
+        UserRole.User,
+        ''
+      );
       log.info(`User created successfully: ${profile.emails[0].value}`);
+      return { user, token };
     }
 
-    const token = generateToken(user._id);
-    return { user, token };
+    const token = generateToken(usr._id);
+    return { user: usr, token };
   } catch (error: any) {
     log.error(`Error signing in with Google ${error.message}`);
     throw error;
@@ -95,26 +99,24 @@ export const facebookSignIn = async (profile: any) => {
   try {
     log.info(`Signing in user via Facebook: ${profile.emails[0].value}`);
 
-    let user = await User.findOne({ email: profile.emails[0].value });
+    const usr = await User.findOne({ email: profile.emails[0].value });
 
-    if (!user) {
+    if (!usr) {
       log.info(`User not found, creating new user: ${profile.emails[0].value}`);
-      user = new User({
-        firstName: profile.name.givenName,
-        lastName: profile.name.familyName,
-        email: profile.emails[0].value,
-        authProvider: AuthProvider.Facebook,
-        AuthProviderId: profile.id,
-        role: 'user',
-        status: UserStatus.Inactive,
-      });
-
-      await user.save();
+      const { user, token } = await registerUser(
+        profile.emails[0].value,
+        '',
+        AuthProvider.Google,
+        profile.id,
+        UserRole.User,
+        ''
+      );
       log.info(`User created successfully: ${profile.emails[0].value}`);
+      return { user, token };
     }
 
-    const token = generateToken(user._id);
-    return { user, token };
+    const token = generateToken(usr._id);
+    return { user: usr, token };
   } catch (error: any) {
     log.error(`Error signing in with Facebook ${error.message}`);
     throw error;

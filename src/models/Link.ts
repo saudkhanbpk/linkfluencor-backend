@@ -1,19 +1,7 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import crypto from 'crypto';
 import { config } from '../config/env';
-
-export interface ILink extends Document {
-  originalUrl: string;
-  shortUrl: string;
-  user: Schema.Types.ObjectId;
-  team: Schema.Types.ObjectId | null;
-  clicks: number;
-  targetSite: string;
-  prefix: string | null;
-  tags: Array<string> | null;
-  createdAt: Date;
-  updatedAt: Date;
-}
+import { ILink } from 'interfaces/Link';
 
 const linkSchema = new Schema<ILink>(
   {
@@ -32,9 +20,9 @@ const linkSchema = new Schema<ILink>(
         message: (props: any) => `${props.value} is not a valid short URL!`,
       },
     },
-    user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    team: { type: Schema.Types.ObjectId, ref: 'Team', default: null },
-    clicks: { type: Number, default: 0 },
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    brand: { type: Schema.Types.ObjectId, ref: 'Brand', default: null },
+    clickCount: { type: Number, default: 0 },
     targetSite: { type: String, required: true },
     prefix: { type: String, default: null, maxlength: 6 },
     tags: { type: [String], default: null },

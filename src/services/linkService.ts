@@ -1,9 +1,12 @@
 import mongoose from 'mongoose';
 import log from '../utils/logger';
-import Link, { ILink } from '../models/Link';
+import Link from '../models/Link';
 import User from '../models/User';
 import { generateShortUrl } from '../utils/urlGenerator';
 import { detectTargetSite } from '../utils/urlUtils';
+import { ILink } from '../interfaces/Link';
+import { UserRole } from '../types/enums';
+import { getUserById } from '../services/userService';
 import { extractLinksFromFile } from '../utils/uploadUtils';
 import { BulkLinkData } from '../types/interfaces';
 
@@ -36,7 +39,12 @@ export const getAllLinksForUser = async (
 
     const sort = sortOptions[sortBy] || sortOptions['topLinks'];
 
-    const links = await Link.find({ user: user._id })
+    const req =
+      user.role === UserRole.BrandUser && user.brand
+        ? { brand: user.brand }
+        : { user: user._id };
+
+    const links = await Link.find(req)
       .sort(sort)
       .skip((page - 1) * limit)
       .limit(limit);
@@ -78,7 +86,9 @@ export const createShortLink = async (
       user: user._id,
       originalUrl,
       shortUrl,
+      createdBy: user._id,
       targetSite,
+      brand: user.brand,
       prefix,
       tags,
     });
@@ -91,6 +101,42 @@ export const createShortLink = async (
     log.error(
       `Error creating short link for user with id: ${userId}: ${error.message}`
     );
+    throw error;
+  }
+};
+
+export const getOriginalUrl = async (shortUrl: string): Promise<ILink> => {
+  try {
+    log.info(`Searching short link for: ${shortUrl}`);
+    const link = await Link.findOne({ shortUrl }).exec();
+
+    if (!link) {
+      log.warn(`Link with short url: ${shortUrl} not found`);
+      throw new Error(`Link with short url: ${shortUrl} not found`);
+    }
+
+    return link;
+  } catch (error: any) {
+    log.error(`Error getting original URL for short URL: ${shortUrl}`);
+    throw error;
+  }
+};
+
+export const incrementLinkClicks = async (linkId: string) => {
+  try {
+    log.info(`Incrementing clicks for link with id: ${linkId}`);
+    const link = await Link.findById(linkId);
+
+    if (!link) {
+      log.warn(`Link with id: ${linkId} not found`);
+      throw new Error('Link not found');
+    }
+
+    link.clickCount += 1;
+    await link.save();
+    log.info(`Clicks incremented for link with id: ${linkId}`);
+  } catch (error: any) {
+    log.error(`Error incrementing clicks for link with id: ${linkId}`);
     throw error;
   }
 };
@@ -165,7 +211,25 @@ export const updateShortLink = async (
       throw new Error('Link not found');
     }
 
-    if (link.user.toString() !== userId) {
+    const user = await getUserById(userId);
+
+    if (
+      user &&
+      user.role === UserRole.User &&
+      link.createdBy.toString() !== userId
+    ) {
+      log.warn(
+        `User with id: ${userId} is not authorized to update link with id: ${linkId}`
+      );
+      throw new Error('Unauthorized');
+    }
+
+    if (
+      user &&
+      user.role === UserRole.BrandUser &&
+      link.brand &&
+      link.brand !== user.brand
+    ) {
       log.warn(
         `User with id: ${userId} is not authorized to update link with id: ${linkId}`
       );
@@ -208,42 +272,6 @@ export const updateTags = async (linkId: string, tags: string[]) => {
     log.info(`Tags updated for link with id: ${linkId}`);
   } catch (error: any) {
     log.error(`Error updating tags for link with id: ${linkId}`);
-    throw error;
-  }
-};
-
-export const getOriginalUrl = async (shortUrl: string): Promise<ILink> => {
-  try {
-    log.info(`Searching short link for: ${shortUrl}`);
-    const link = await Link.findOne({ shortUrl }).exec();
-
-    if (!link) {
-      log.warn(`Link with short url: ${shortUrl} not found`);
-      throw new Error(`Link with short url: ${shortUrl} not found`);
-    }
-
-    return link;
-  } catch (error: any) {
-    log.error(`Error getting original URL for short URL: ${shortUrl}`);
-    throw error;
-  }
-};
-
-export const incrementLinkClicks = async (linkId: string) => {
-  try {
-    log.info(`Incrementing clicks for link with id: ${linkId}`);
-    const link = await Link.findById(linkId);
-
-    if (!link) {
-      log.warn(`Link with id: ${linkId} not found`);
-      throw new Error('Link not found');
-    }
-
-    link.clicks += 1;
-    await link.save();
-    log.info(`Clicks incremented for link with id: ${linkId}`);
-  } catch (error: any) {
-    log.error(`Error incrementing clicks for link with id: ${linkId}`);
     throw error;
   }
 };
@@ -299,7 +327,8 @@ export const deleteLink = async (userId: string, linkId: string) => {
       throw new Error('Link not found');
     }
 
-    if (link.user.toString() !== userId) {
+    // todo - add brand check
+    if (link.createdBy.toString() !== userId) {
       log.warn(
         `User with id: ${userId} is not authorized to delete link with id: ${linkId}`
       );
@@ -338,9 +367,9 @@ export const deleteMultipleLinks = async (
       log.warn('Some links not found');
       throw new Error('Some links not found');
     }
-
+    // todo - add brand check
     links.forEach(async link => {
-      if (link.user.toString() !== userId) {
+      if (link.createdBy.toString() !== userId) {
         log.warn(
           `User with id: ${userId} is not authorized to delete link with id: ${link._id}`
         );

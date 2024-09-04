@@ -1,23 +1,28 @@
-import { Schema, model, Document } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { BrandMemberRole } from '../types/enums';
-
-export interface IBrand extends Document {
-  name: string;
-  mainUser: Schema.Types.ObjectId;
-  members: Array<{ user: Schema.Types.ObjectId; role: BrandMemberRole }>;
-}
+import { IBrand } from 'interfaces/Brand';
 
 const brandSchema = new Schema<IBrand>(
   {
     name: { type: String, required: false },
-    mainUser: { type: String, required: false },
+    email: { type: String, required: true, unique: true },
+    photoPath: { type: String, default: null },
+    country: { type: String, default: null },
+    city: { type: String, default: null },
+    mobileNumber: { type: String, default: null },
+    address: { type: String, default: null },
     members: [
       {
-        user: { type: Schema.Types.ObjectId, ref: 'User' },
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: 'User',
+          required: true,
+        },
         role: {
           type: String,
           enum: Object.values(BrandMemberRole),
           default: BrandMemberRole.Admin,
+          required: true,
         },
       },
     ],

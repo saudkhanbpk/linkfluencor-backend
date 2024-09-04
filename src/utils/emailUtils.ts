@@ -1,5 +1,18 @@
 import nodemailer from 'nodemailer';
 import { config } from '../config/env';
+import { UserStatus } from '../types/enums';
+
+export const handleEmailNotifications = async (
+  email: string,
+  status: UserStatus,
+  activationToken?: string
+) => {
+  if (status === UserStatus.Active) {
+    await sendWelcomeEmail(email);
+  } else if (status === UserStatus.Pending && activationToken) {
+    await sendActivationEmail(email, activationToken);
+  }
+};
 
 export const sendActivationEmail = async (email: string, token: string) => {
   const transporter = nodemailer.createTransport({

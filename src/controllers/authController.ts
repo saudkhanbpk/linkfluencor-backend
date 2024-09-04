@@ -10,15 +10,15 @@ export const registerController = async (req: Request, res: Response) => {
   }
 
   try {
-    const { firstName, lastName, email, password, authProvider, role } =
+    const { email, password, authProvider, authProviderId, role, brandName } =
       req.body;
     const { token, user } = await registerUser(
-      firstName,
-      lastName,
       email,
       password,
       authProvider,
-      role
+      authProviderId,
+      role,
+      brandName
     );
 
     res.status(201).json({ token, user });

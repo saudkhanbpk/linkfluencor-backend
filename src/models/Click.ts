@@ -1,19 +1,9 @@
-import { Schema, model, Document } from 'mongoose';
-
-export interface IClick extends Document {
-  link: Schema.Types.ObjectId;
-  clickedAt: Date;
-  ipAddress: string;
-  userAgent: string;
-  platform: string;
-  country: string;
-  city: string;
-  referrer: string | null;
-}
+import { Schema, model } from 'mongoose';
+import { IClick } from 'interfaces/Click';
 
 const clickSchema = new Schema<IClick>(
   {
-    link: { type: Schema.Types.ObjectId, ref: 'Link', required: true },
+    linkId: { type: Schema.Types.ObjectId, ref: 'Link', required: true },
     clickedAt: { type: Date, default: Date.now },
     ipAddress: { type: String, required: true },
     userAgent: { type: String, required: true },
