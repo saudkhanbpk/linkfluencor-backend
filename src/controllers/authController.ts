@@ -2,8 +2,15 @@ import { Request, Response } from 'express';
 import { registerUser, loginUser } from '../services/authService';
 import { validationResult } from 'express-validator';
 import { activateUser } from '../services/userService';
+import ValidationError from '../errors/ValidationError';
 
-export const registerController = async (req: Request, res: Response) => {
+import { NextFunction } from 'express';
+
+export const registerController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
@@ -23,7 +30,7 @@ export const registerController = async (req: Request, res: Response) => {
 
     res.status(201).json({ token, user });
   } catch (error: any) {
-    res.status(400).json({ message: error.message || 'Registration failed' });
+    next(new ValidationError(error.message));
   }
 
   return;

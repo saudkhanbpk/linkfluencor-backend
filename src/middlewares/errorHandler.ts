@@ -1,23 +1,24 @@
 import { Request, Response, NextFunction } from 'express';
-import log from '../utils/logger'; // Importer le logger
+import log from '../utils/logger';
+import CustomError from '../errors/CustomError';
 
 const errorHandler = (
-  err: Error,
+  err: Error | CustomError,
   _req: Request,
   res: Response,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction
 ): void => {
-  const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
-  res.status(statusCode);
+  const statusCode = err instanceof CustomError ? err.statusCode : 500;
 
   log.error(
     `Status: ${statusCode}, Message: ${err.message}, Stack: ${err.stack}`
   );
 
-  res.json({
+  res.status(statusCode).json({
+    status: 'error',
     message: err.message,
-    stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack,
   });
 };
 
