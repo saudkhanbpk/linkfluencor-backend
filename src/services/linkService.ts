@@ -9,6 +9,10 @@ import { UserRole } from '../types/enums';
 import { getUserById } from '../services/userService';
 import { extractLinksFromFile } from '../utils/uploadUtils';
 import { BulkLinkData } from '../types/interfaces';
+import ValidationError from '../errors/ValidationError';
+import NotFoundError from '../errors/NotFoundError';
+import AuthorizationError from '../errors/AuthorizationError';
+import ConflictError from '../errors/ConflictError';
 
 export const getAllLinksForUser = async (
   userId: string,
@@ -21,13 +25,13 @@ export const getAllLinksForUser = async (
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       log.error('Invalid user ID format');
-      throw new Error('Invalid user ID format');
+      throw new ValidationError('Invalid user ID format');
     }
 
     const user = await User.findById(userId);
     if (!user) {
       log.warn(`User with id: ${userId} not found`);
-      throw new Error('User not found');
+      throw new NotFoundError('User not found');
     }
 
     const sortOptions: { [key: string]: any } = {
@@ -72,7 +76,7 @@ export const createShortLink = async (
 
     if (!user) {
       log.warn(`User with id: ${userId} not found`);
-      throw new Error('User not found');
+      throw new NotFoundError('User not found');
     }
 
     const shortUrl = suffix ?? generateShortUrl();
@@ -112,7 +116,7 @@ export const getOriginalUrl = async (shortUrl: string): Promise<ILink> => {
 
     if (!link) {
       log.warn(`Link with short url: ${shortUrl} not found`);
-      throw new Error(`Link with short url: ${shortUrl} not found`);
+      throw new NotFoundError(`Link with short url: ${shortUrl} not found`);
     }
 
     return link;
@@ -129,7 +133,7 @@ export const incrementLinkClicks = async (linkId: string) => {
 
     if (!link) {
       log.warn(`Link with id: ${linkId} not found`);
-      throw new Error('Link not found');
+      throw new NotFoundError('Link not found');
     }
 
     link.clickCount += 1;
@@ -153,7 +157,7 @@ export const updateLink = async (
 
     if (!link) {
       log.warn(`Link with id: ${linkId} not found`);
-      throw new Error('Link not found');
+      throw new NotFoundError('Link not found');
     }
 
     if (originalUrl) {
@@ -165,7 +169,7 @@ export const updateLink = async (
 
       if (existingLink) {
         log.warn(`Short URL: ${shortUrl} is already in use`);
-        throw new Error('Short URL already in use');
+        throw new ConflictError('Short URL already in use');
       }
 
       link.shortUrl = shortUrl;
@@ -202,13 +206,13 @@ export const updateShortLink = async (
       !mongoose.Types.ObjectId.isValid(linkId)
     ) {
       log.error('Invalid user ID or link ID format');
-      throw new Error('Invalid user ID or link ID format');
+      throw new ValidationError('Invalid user ID or link ID format');
     }
 
     const link = await Link.findById(linkId);
     if (!link) {
       log.warn(`Link with id: ${linkId} not found`);
-      throw new Error('Link not found');
+      throw new NotFoundError('Link not found');
     }
 
     const user = await getUserById(userId);
@@ -221,7 +225,7 @@ export const updateShortLink = async (
       log.warn(
         `User with id: ${userId} is not authorized to update link with id: ${linkId}`
       );
-      throw new Error('Unauthorized');
+      throw new AuthorizationError('Unauthorized');
     }
 
     if (
@@ -233,13 +237,13 @@ export const updateShortLink = async (
       log.warn(
         `User with id: ${userId} is not authorized to update link with id: ${linkId}`
       );
-      throw new Error('Unauthorized');
+      throw new AuthorizationError('Unauthorized');
     }
 
     const existingLink = await Link.findOne({ shortUrl: newShortUrl });
     if (existingLink) {
       log.warn(`Short URL: ${newShortUrl} is already in use`);
-      throw new Error('Short URL already in use');
+      throw new ConflictError('Short URL already in use');
     }
 
     link.shortUrl = newShortUrl;
@@ -264,7 +268,7 @@ export const updateTags = async (linkId: string, tags: string[]) => {
 
     if (!link) {
       log.warn(`Link with id: ${linkId} not found`);
-      throw new Error('Link not found');
+      throw new NotFoundError('Link not found');
     }
 
     link.tags = tags;
@@ -317,30 +321,20 @@ export const deleteLink = async (userId: string, linkId: string) => {
       !mongoose.Types.ObjectId.isValid(linkId)
     ) {
       log.error('Invalid user ID or link ID format');
-      throw new Error('Invalid user ID or link ID format');
+      throw new ValidationError('Invalid user ID or link ID format');
     }
 
     const link = await Link.findById(linkId);
 
     if (!link) {
       log.warn(`Link with id: ${linkId} not found`);
-      throw new Error('Link not found');
-    }
-
-    // todo - add brand check
-    if (link.createdBy.toString() !== userId) {
-      log.warn(
-        `User with id: ${userId} is not authorized to delete link with id: ${linkId}`
-      );
-      throw new Error('Unauthorized');
+      throw new NotFoundError('Link not found');
     }
 
     await link.remove();
-    log.info(`Link with id: ${linkId} deleted successfully`);
+    log.info(`Link with id: ${linkId} deleted for user with id: ${userId}`);
   } catch (error: any) {
-    log.error(
-      `Error deleting link with id: ${linkId} for user with id: ${userId}`
-    );
+    log.error(`Error deleting link with id: ${linkId}`);
     throw error;
   }
 };
@@ -351,37 +345,27 @@ export const deleteMultipleLinks = async (
 ) => {
   try {
     log.info(
-      `Deleting multiple links for user with id: ${userId}: ${linkIds.join(
-        ', '
-      )}`
+      `Deleting multiple links for user with id: ${userId}: ${linkIds.join()}`
     );
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       log.error('Invalid user ID format');
-      throw new Error('Invalid user ID format');
+      throw new ValidationError('Invalid user ID format');
     }
 
     const links = await Link.find({ _id: { $in: linkIds } });
 
-    if (links.length !== linkIds.length) {
-      log.warn('Some links not found');
-      throw new Error('Some links not found');
+    if (links.length === 0) {
+      log.warn('No links found');
+      throw new NotFoundError('Links not found');
     }
-    // todo - add brand check
-    links.forEach(async link => {
-      if (link.createdBy.toString() !== userId) {
-        log.warn(
-          `User with id: ${userId} is not authorized to delete link with id: ${link._id}`
-        );
-        throw new Error('Unauthorized');
-      }
 
-      await link.remove();
-    });
-
-    log.info(`Links deleted successfully for user with id: ${userId}`);
+    await Link.deleteMany({ _id: { $in: linkIds } });
+    log.info(
+      `Multiple links deleted for user with id: ${userId}: ${linkIds.join()}`
+    );
   } catch (error: any) {
-    log.error(`Error deleting links for user with id: ${userId}`);
+    log.error(`Error deleting multiple links for user with id: ${userId}`);
     throw error;
   }
 };

@@ -1,4 +1,6 @@
-import winston from 'winston';
+import winston, { format, transports } from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
+import { config } from '../config/env';
 
 const customLevels = {
   levels: {
@@ -19,46 +21,59 @@ const customLevels = {
 
 winston.addColors(customLevels.colors);
 
-const fileFormat = winston.format.combine(
-  winston.format.timestamp(),
-  winston.format.json()
+const fileFormat = format.combine(format.timestamp(), format.json());
+
+const consoleFormat = format.combine(
+  format.colorize(),
+  format.timestamp(),
+  format.printf(({ timestamp, level, message, stack }) => {
+    return `${timestamp} ${level}: ${stack || message}`;
+  })
 );
 
-const consoleFormat = winston.format.combine(
-  winston.format.colorize(),
-  winston.format.timestamp(),
-  winston.format.printf(
-    ({ timestamp, level, message }) => `${timestamp} ${level}: ${message}`
-  )
-);
+const fileErrorTransport = new DailyRotateFile({
+  filename: 'logs/error-%DATE%.log',
+  datePattern: 'YYYY-MM-DD',
+  level: 'error',
+  maxSize: '20m',
+  maxFiles: '14d',
+});
 
-const transports = [
-  new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-  new winston.transports.File({ filename: 'logs/combined.log' }),
+const fileCombinedTransport = new DailyRotateFile({
+  filename: 'logs/combined-%DATE%.log',
+  datePattern: 'YYYY-MM-DD',
+  maxSize: '20m',
+  maxFiles: '14d',
+});
+
+const consoleTransport = new transports.Console({
+  format: consoleFormat,
+  level: 'debug',
+});
+
+const loggerTransports: winston.transport[] = [
+  fileErrorTransport,
+  fileCombinedTransport,
 ];
 
 if (process.env.NODE_ENV !== 'production') {
-  transports.push(
-    new winston.transports.File({
-      filename: 'logs/console.log',
-      format: consoleFormat,
-    })
-  );
+  loggerTransports.push(consoleTransport);
 }
 
 const logger = winston.createLogger({
   levels: customLevels.levels,
-  level: 'debug',
+  level: config.logLevel || 'info',
   format: fileFormat,
-  transports,
+  transports: loggerTransports,
+  exitOnError: false,
 });
 
 const log = {
-  error: (message: string) => logger.error(message),
-  warn: (message: string) => logger.warn(message),
-  info: (message: string) => logger.info(message),
-  http: (message: string) => logger.http(message),
-  debug: (message: string) => logger.debug(message),
+  error: (message: string, meta = {}) => logger.error(message, meta),
+  warn: (message: string, meta = {}) => logger.warn(message, meta),
+  info: (message: string, meta = {}) => logger.info(message, meta),
+  http: (message: string, meta = {}) => logger.http(message, meta),
+  debug: (message: string, meta = {}) => logger.debug(message, meta),
 };
 
 export default log;

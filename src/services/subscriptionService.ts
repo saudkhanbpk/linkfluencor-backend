@@ -3,6 +3,7 @@ import log from '../utils/logger';
 import { SubscriptionPlan, UserRole } from '../types/enums';
 import * as InfluencerSubscription from './influencerSubscriptionService';
 import * as BrandSubscription from './brandSubscriptionService';
+import NotFoundError from '../errors/NotFoundError';
 
 const SubscriptionService = (role: UserRole) => {
   if (role === UserRole.User) {
@@ -11,7 +12,7 @@ const SubscriptionService = (role: UserRole) => {
     return BrandSubscription;
   } else {
     log.warn(`Role ${role} not found`);
-    throw new Error(`Role ${role} not found`);
+    throw new NotFoundError(`Role ${role} not found`);
   }
 };
 
@@ -37,7 +38,6 @@ export const getClicksLeft = async (
   role: UserRole
 ) => {
   try {
-    log.info(`Get clicks left for user ${user}`);
     return SubscriptionService(role).getClicksLeft(user);
   } catch (error: any) {
     log.error(`Error getting clicks left for user ${user}: ${error.message}`);
@@ -50,7 +50,6 @@ export const incrementClicks = async (
   role: UserRole
 ) => {
   try {
-    log.info(`Incrementing clicks for user ${user}`);
     return SubscriptionService(role).incrementClicks(user);
   } catch (error: any) {
     log.error(`Error incrementing clicks for user ${user}: ${error.message}`);

@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { config } from '../config/env';
 import { AuthProvider } from '../types/enums';
+import AuthenticationError from '../errors/AuthenticationError';
 
 export const handlePasswordHashing = async (
   password: string,
@@ -10,7 +11,9 @@ export const handlePasswordHashing = async (
 ) => {
   if (authProvider === AuthProvider.Local) {
     if (!password) {
-      throw new Error('Password is required for internal authentication');
+      throw new AuthenticationError(
+        'Password is required for internal authentication'
+      );
     }
     return await hashPassword(password);
   }

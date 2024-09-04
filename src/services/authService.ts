@@ -16,6 +16,8 @@ import { addUserToBrand, handleBrandAssociation } from './brandService';
 import { createUser, validateUserExistence } from '../services/userService';
 import { handleEmailNotifications } from '../utils/emailUtils';
 import { createSubscription } from '../services/subscriptionService';
+import AuthorizationError from '../errors/AuthorizationError';
+import NotFoundError from '../errors/NotFoundError';
 
 export const registerUser = async (
   email: string,
@@ -130,14 +132,14 @@ export const loginUser = async (email: string, password: string) => {
 
     if (!user) {
       log.warn(`Login failed: User not found for email ${email}`);
-      throw new Error('Invalid credentials');
+      throw new NotFoundError('Invalid credentials');
     }
 
     const isMatch = await comparePassword(password, user.password);
 
     if (!isMatch) {
       log.warn(`Login failed: Incorrect password for email ${email}`);
-      throw new Error('Invalid credentials');
+      throw new AuthorizationError('Invalid credentials');
     }
 
     const token = generateToken(user._id);

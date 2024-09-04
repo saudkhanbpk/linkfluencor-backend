@@ -1,6 +1,7 @@
 import User from '../models/User';
 import log from '../utils/logger';
 import { UserStatus } from '../types/enums';
+import ConflictError from '../errors/ConflictError';
 
 export const getAllUsers = async () => {
   try {
@@ -71,7 +72,7 @@ export const getUserById = async (id: string) => {
     log.info(`Fetching user with id: ${id}`);
     const user = await User.findById(id);
     if (user) {
-      log.info(`Fetched user: ${user}`);
+      log.info(`Fetched user: ${user._id}`);
     } else {
       log.warn(`User with id: ${id} not found`);
     }
@@ -86,7 +87,7 @@ export const validateUserExistence = async (email: string) => {
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     log.warn(`User already exists: ${email}`);
-    throw new Error('User already exists');
+    throw new ConflictError('User already exists');
   }
 };
 

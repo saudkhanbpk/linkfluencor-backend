@@ -23,6 +23,7 @@ const validateEnv = () => {
     PLAN_SCALE_PRICE: str(),
     PLAN_SCALE_CLICKS_LIMIT: str(),
     ALLOWED_ORIGINS: str(),
+    LOG_LEVEL: str(),
   });
 };
 

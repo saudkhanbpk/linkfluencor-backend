@@ -17,6 +17,8 @@ import { ILink } from '../interfaces/Link';
 import { getUserById } from '../services/userService';
 import { TimeInterval, TimeGranularity } from '../types/types';
 import { IClick } from 'interfaces/Click';
+import NotFoundError from '../errors/NotFoundError';
+import ConflictError from '../errors/ConflictError';
 
 export const handleClick = async (req: Request) => {
   try {
@@ -26,20 +28,20 @@ export const handleClick = async (req: Request) => {
 
     if (!link) {
       log.error('Invalid short url');
-      throw new Error('Invalid short url');
+      throw new NotFoundError('Invalid short url');
     }
 
     const user = await getUserById(link.createdBy.toString());
     if (!user) {
       log.error('Invalid user');
-      throw new Error('Invalid user');
+      throw new NotFoundError('Invalid user');
     }
 
     const clicksLeft = await getClicksLeft(link.createdBy, user.role);
 
     if (!clicksLeft) {
       log.warn('No clicks left');
-      throw new Error('No clicks left');
+      throw new ConflictError('No clicks left');
     }
     await incrementClicks(link.createdBy, user.role);
     await incrementLinkClicks(link._id);
@@ -264,7 +266,7 @@ export const getClicksByIntervalAndUser = async (
 
     if (!user) {
       log.error(`User not found: ${userId}`);
-      throw new Error('User not found');
+      throw new NotFoundError('Invalid user');
     }
     const userLinks = await getAllLinksForUser(userId);
 

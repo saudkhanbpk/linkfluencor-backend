@@ -1,6 +1,8 @@
 import * as XLSX from 'xlsx';
 import * as csv from 'csv-parse/sync';
 import { BulkLinkData } from '../types/interfaces';
+import ValidationError from '../errors/ValidationError';
+import BadRequestError from '../errors/BadRequestError';
 
 export const extractLinksFromFile = (
   fileBuffer: Buffer,
@@ -10,7 +12,7 @@ export const extractLinksFromFile = (
 
   const fileExtension = fileName.split('.').pop()?.toLowerCase();
   if (!fileExtension) {
-    throw new Error('Unable to determine file extension');
+    throw new BadRequestError('Unable to determine file extension');
   }
 
   if (fileExtension === 'xlsx' || fileExtension === 'xls') {
@@ -22,7 +24,7 @@ export const extractLinksFromFile = (
     const csvData = fileBuffer.toString();
     data = csv.parse(csvData, { columns: false, skip_empty_lines: true });
   } else {
-    throw new Error('Unsupported file type');
+    throw new ValidationError('Unsupported file type');
   }
 
   const rows = data.slice(1);
@@ -30,7 +32,7 @@ export const extractLinksFromFile = (
   const links = rows.map(row => {
     const originalUrl = row[0];
     if (!originalUrl) {
-      throw new Error('originalUrl is required');
+      throw new ValidationError('originalUrl is required');
     }
 
     return {

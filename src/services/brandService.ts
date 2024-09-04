@@ -2,6 +2,8 @@ import { Schema } from 'mongoose';
 import Brand from '../models/Brand';
 import { BrandMemberRole } from '../types/enums';
 import log from '../utils/logger';
+import ValidationError from '../errors/ValidationError';
+import NotFoundError from '../errors/NotFoundError';
 
 export const createBrand = (userId: string) => {
   try {
@@ -28,7 +30,7 @@ export const handleBrandAssociation = async (
   log.info('Associating brand');
   if (!brandName || !brandEmail) {
     log.error('Brand name and brand email are required to associate a brand');
-    throw new Error(
+    throw new ValidationError(
       'Brand name and brand email are required to create a new brand'
     );
   }
@@ -54,7 +56,7 @@ export const addUserToBrand = async (
     const brand = await Brand.findById(brandId);
     if (!brand) {
       log.error(`Brand not found: ${brandId}`);
-      throw new Error('Brand not found');
+      throw new NotFoundError('Brand not found');
     }
     brand.members.push({ userId, role });
     await brand.save();
@@ -71,7 +73,7 @@ export const getBrandByUser = async (userId: Schema.Types.ObjectId) => {
     const brand = await Brand.findOne({ 'members.userId': userId });
     if (!brand) {
       log.warn(`Brand not found for user ID: ${userId}`);
-      throw new Error('Brand not found');
+      throw new NotFoundError('Brand not found');
     }
     log.info(`Brand found for user ID: ${userId}`);
     return brand;
