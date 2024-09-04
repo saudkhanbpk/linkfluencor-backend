@@ -1,7 +1,10 @@
 import User from '../models/User';
 import log from '../utils/logger';
-import { UserStatus } from '../types/enums';
+import { UserRole, UserStatus } from '../types/enums';
 import ConflictError from '../errors/ConflictError';
+import ValidationError from '../errors/ValidationError';
+import { getBrandByUser } from '../services/brandService';
+import NotFoundError from '../errors/NotFoundError';
 
 export const getAllUsers = async () => {
   try {
@@ -125,21 +128,61 @@ export const deleteUser = async (id: string) => {
   }
 };
 
-export const getProfileCompletion = async (id: string) => {
+export const getProfileCompletion = async (id: string): Promise<number> => {
   try {
-    log.info(`Fetching user with id: ${id}`);
+    log.info(`Getting profile completion for user with id: ${id}`);
     const user = await User.findById(id);
-    if (user) {
-      log.info(`Fetched user: ${user}`);
-      const completion = user.calculateProfileCompletion();
-      log.info(`Profile completion for user ${id}: ${completion}%`);
-      return completion;
-    } else {
-      log.warn(`User with id: ${id} not found`);
-      return null;
+
+    if (!user) {
+      throw new NotFoundError('User not found');
     }
+
+    let requiredFields: string[] = [];
+    let completedFields = 0;
+
+    if (user.role === UserRole.User) {
+      requiredFields = [
+        'firstName',
+        'lastName',
+        'password',
+        'gender',
+        'country',
+        'city',
+        'address',
+        'mobileNumber',
+        'birthDate',
+        'photoPath',
+      ];
+      requiredFields.forEach(field => {
+        if ((user as any)[field]) {
+          completedFields++;
+        }
+      });
+    } else if (user.role === UserRole.BrandUser) {
+      requiredFields = [
+        'name',
+        'photoPath',
+        'country',
+        'city',
+        'address',
+        'mobileNumber',
+      ];
+      const brand = await getBrandByUser(user.id);
+
+      requiredFields.forEach(field => {
+        if ((brand as any)[field]) {
+          completedFields++;
+        }
+      });
+    } else {
+      throw new ValidationError('Invalid user role');
+    }
+
+    const profileCompletion = (completedFields / requiredFields.length) * 100;
+
+    return profileCompletion;
   } catch (error: any) {
-    log.error(`Error fetching user with id ${id}: ${error.message}`);
+    log.error(`Error when getting profile completion: ${error.message}`);
     throw error;
   }
 };
