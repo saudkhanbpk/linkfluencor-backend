@@ -24,6 +24,7 @@ const brandSchema = new Schema<IBrand>(
           default: BrandMemberRole.Admin,
           required: true,
         },
+        addedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
       },
     ],
   },

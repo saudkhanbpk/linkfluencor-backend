@@ -1,10 +1,17 @@
 import User from '../models/User';
 import log from '../utils/logger';
-import { UserRole, UserStatus } from '../types/enums';
+import {
+  AuthProvider,
+  BrandMemberRole,
+  UserRole,
+  UserStatus,
+} from '../types/enums';
 import ConflictError from '../errors/ConflictError';
 import ValidationError from '../errors/ValidationError';
-import { getBrandByUser } from '../services/brandService';
+import { addUserToBrand, getBrandByUser } from '../services/brandService';
 import NotFoundError from '../errors/NotFoundError';
+import { generateActivationToken } from '../utils/authUtils';
+import { handleEmailNotifications } from '../utils/emailUtils';
 
 export const getAllUsers = async () => {
   try {
@@ -183,6 +190,58 @@ export const getProfileCompletion = async (id: string): Promise<number> => {
     return profileCompletion;
   } catch (error: any) {
     log.error(`Error when getting profile completion: ${error.message}`);
+    throw error;
+  }
+};
+
+export const inviteToBrand = async (
+  userId: string,
+  brandId: string,
+  invitedUserEmail: string,
+  role: BrandMemberRole
+) => {
+  try {
+    log.info(
+      `Inviting user ${invitedUserEmail} to brand ${brandId} by ${userId}`
+    );
+
+    await validateUserExistence(invitedUserEmail);
+
+    const user = await getUserById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+    if (user.role !== UserRole.BrandUser) {
+      throw new ValidationError('Only brand users can invite to brand');
+    }
+    if (user.brand && user.brand.toString() !== brandId) {
+      throw new ValidationError('User does not belong to brand');
+    }
+    const invitedUser = await createUser(
+      invitedUserEmail,
+      '',
+      AuthProvider.Local,
+      '',
+      UserRole.BrandUser,
+      brandId,
+      generateActivationToken()
+    );
+
+    await addUserToBrand(invitedUser.id, invitedUser.brand!, role);
+
+    await handleEmailNotifications(
+      invitedUser.email,
+      invitedUser.status,
+      invitedUser.activationToken
+    );
+
+    log.info(`Invited user ${invitedUserEmail} to brand ${brandId}`);
+
+    return invitedUser;
+  } catch (error: any) {
+    log.error(
+      `Error inviting user ${invitedUserEmail} to brand ${brandId}: ${error.message}`
+    );
     throw error;
   }
 };

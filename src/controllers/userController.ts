@@ -4,6 +4,7 @@ import {
   getAllUsers,
   updateUser,
   deleteUser,
+  inviteToBrand,
 } from '../services/userService';
 import {
   createSubscription,
@@ -216,6 +217,20 @@ export const getClicksGranularityByUserController = async (
       granularity
     );
     res.json(clicks);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
+};
+
+export const inviteToBrandController = async (req: Request, res: Response) => {
+  try {
+    return await inviteToBrand(
+      req.params.id,
+      req.body.brandId,
+      req.body.email,
+      req.body.role
+    );
   } catch (error) {
     res.status(500).json({ message: error });
   }
