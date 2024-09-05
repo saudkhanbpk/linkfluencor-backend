@@ -9,5 +9,9 @@ export interface IBrand extends Document {
   city?: string;
   mobileNumber?: string;
   address?: string;
-  members: Array<{ userId: Schema.Types.ObjectId; role: BrandMemberRole }>;
+  members: Array<{
+    userId: Schema.Types.ObjectId;
+    role: BrandMemberRole;
+    addedBy: Schema.Types.ObjectId;
+  }>;
 }

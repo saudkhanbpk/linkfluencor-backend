@@ -227,7 +227,7 @@ export const inviteToBrand = async (
       generateActivationToken()
     );
 
-    await addUserToBrand(invitedUser.id, invitedUser.brand!, role);
+    await addUserToBrand(invitedUser.id, invitedUser.brand!, role, user.id);
 
     await handleEmailNotifications(
       invitedUser.email,

@@ -50,7 +50,7 @@ export const registerUser = async (
     );
 
     if (brand) {
-      await addUserToBrand(user.id, brand.id, BrandMemberRole.Admin);
+      await addUserToBrand(user.id, brand.id, BrandMemberRole.Admin, user.id);
     }
 
     await createSubscription(user.id, role, SubscriptionPlan.Free);

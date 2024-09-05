@@ -49,7 +49,8 @@ export const handleBrandAssociation = async (
 export const addUserToBrand = async (
   userId: Schema.Types.ObjectId,
   brandId: Schema.Types.ObjectId,
-  role: BrandMemberRole
+  role: BrandMemberRole,
+  addedBy: Schema.Types.ObjectId
 ) => {
   try {
     log.info(`Adding user to brand: ${userId}`);
@@ -58,7 +59,7 @@ export const addUserToBrand = async (
       log.error(`Brand not found: ${brandId}`);
       throw new NotFoundError('Brand not found');
     }
-    brand.members.push({ userId, role });
+    brand.members.push({ userId, role, addedBy });
     await brand.save();
     log.info(`User added to brand: ${userId}`);
   } catch (error: any) {
