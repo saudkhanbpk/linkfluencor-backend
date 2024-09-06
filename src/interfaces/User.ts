@@ -22,6 +22,5 @@ export interface IUser extends Document {
   otpCode?: string;
   otpExpiry?: Date;
   verifyPassword(_password: string): Promise<boolean>;
-  generateAuthToken(): string;
   calculateProfileCompletion(): number;
 }

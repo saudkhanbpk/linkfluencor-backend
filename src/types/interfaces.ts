@@ -1,3 +1,5 @@
+import { JwtPayload } from 'jsonwebtoken';
+
 export interface BulkLinkData {
   originalUrl: string;
   prefix?: string | null;
@@ -12,4 +14,8 @@ export interface BulkLinkData {
 export interface PlanDetails {
   price: number;
   clicksLimit: number;
+}
+
+export interface DecodedToken extends JwtPayload {
+  id: string;
 }

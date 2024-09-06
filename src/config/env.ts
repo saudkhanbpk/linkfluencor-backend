@@ -14,6 +14,7 @@ export const config = {
   port: process.env.PORT,
   mongoUri: process.env.MONGO_URI,
   jwtSecret: process.env.JWT_SECRET,
+  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
   sessionSecret: process.env.SESSION_SECRET,
   googleClientId: process.env.GOOGLE_CLIENT_ID,
   googleClientSecret: process.env.GOOGLE_CLIENT_SECRET,

@@ -7,9 +7,10 @@ import {
 } from '../types/enums';
 import {
   comparePassword,
-  generateToken,
   generateActivationToken,
   handlePasswordHashing,
+  generateAccessToken,
+  generateRefreshToken,
 } from '../utils/authUtils';
 import log from '../utils/logger';
 import { addUserToBrand, handleBrandAssociation } from './brandService';
@@ -61,8 +62,11 @@ export const registerUser = async (
       user.activationToken
     );
 
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
+
     log.info(`User registered successfully: ${user.email}`);
-    return { user, token: user.generateAuthToken() };
+    return { user, accessToken, refreshToken };
   } catch (error: any) {
     log.error(`Error registering user: ${error.message}`);
     throw error;
@@ -74,10 +78,12 @@ export const googleSignIn = async (profile: any) => {
     log.info(`Signing in user via Google: ${profile.emails[0].value}`);
 
     const usr = await User.findOne({ email: profile.emails[0].value });
+    let accessToken = null;
+    let refreshToken = null;
 
     if (!usr) {
       log.info(`User not found, creating new user: ${profile.emails[0].value}`);
-      const { user, token } = await registerUser(
+      const { user } = await registerUser(
         profile.emails[0].value,
         '',
         AuthProvider.Google,
@@ -85,12 +91,20 @@ export const googleSignIn = async (profile: any) => {
         UserRole.User,
         ''
       );
-      log.info(`User created successfully: ${profile.emails[0].value}`);
-      return { user, token };
+      log.info(
+        `User from Google created successfully: ${profile.emails[0].value}`
+      );
+
+      accessToken = generateAccessToken(user.id);
+      refreshToken = generateRefreshToken(user.id);
+
+      return { user, accessToken, refreshToken };
     }
 
-    const token = generateToken(usr._id);
-    return { user: usr, token };
+    accessToken = generateAccessToken(usr.id);
+    refreshToken = generateRefreshToken(usr.id);
+
+    return { usr, accessToken, refreshToken };
   } catch (error: any) {
     log.error(`Error signing in with Google ${error.message}`);
     throw error;
@@ -102,10 +116,12 @@ export const facebookSignIn = async (profile: any) => {
     log.info(`Signing in user via Facebook: ${profile.emails[0].value}`);
 
     const usr = await User.findOne({ email: profile.emails[0].value });
+    let accessToken = null;
+    let refreshToken = null;
 
     if (!usr) {
       log.info(`User not found, creating new user: ${profile.emails[0].value}`);
-      const { user, token } = await registerUser(
+      const { user } = await registerUser(
         profile.emails[0].value,
         '',
         AuthProvider.Google,
@@ -113,12 +129,20 @@ export const facebookSignIn = async (profile: any) => {
         UserRole.User,
         ''
       );
-      log.info(`User created successfully: ${profile.emails[0].value}`);
-      return { user, token };
+      log.info(
+        `User created successfully from facebook: ${profile.emails[0].value}`
+      );
+
+      accessToken = generateAccessToken(user.id);
+      refreshToken = generateRefreshToken(user.id);
+
+      return { user, accessToken, refreshToken };
     }
 
-    const token = generateToken(usr._id);
-    return { user: usr, token };
+    accessToken = generateAccessToken(usr.id);
+    refreshToken = generateRefreshToken(usr.id);
+
+    return { usr, accessToken, refreshToken };
   } catch (error: any) {
     log.error(`Error signing in with Facebook ${error.message}`);
     throw error;
@@ -142,11 +166,12 @@ export const loginUser = async (email: string, password: string) => {
       throw new AuthorizationError('Invalid credentials');
     }
 
-    const token = generateToken(user._id);
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
 
     log.info(`User logged in successfully: ${email}`);
 
-    return { token, user };
+    return { user, accessToken, refreshToken };
   } catch (error: any) {
     log.error(`Error logging in user: ${error.message}`);
     throw error;

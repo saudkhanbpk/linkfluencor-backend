@@ -1,8 +1,10 @@
+// middlewares/authMiddleware.js
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import User from '../models/User';
-import { config } from '../config/env';
 import AuthenticationError from '../errors/AuthenticationError';
+import { DecodedToken } from '../types/interfaces';
+import { verifyAccessToken } from '../utils/authUtils';
 
 interface CustomRequest extends Request {
   user?: any;
@@ -13,18 +15,31 @@ export const authMiddleware = async (
   _res: Response,
   next: NextFunction
 ) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
+  const authHeader = req.header('Authorization');
+  const token = authHeader?.replace('Bearer ', '');
 
   if (!token) {
-    throw new AuthenticationError('No token, authorization denied');
+    return next(new AuthenticationError('No token, authorization denied'));
   }
 
   try {
-    const decoded: any = jwt.verify(token, config.jwtSecret || '');
-    req.user = await User.findById(decoded.id).select('-password');
+    const decoded = verifyAccessToken(token) as DecodedToken;
+
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) {
+      return next(
+        new AuthenticationError('User not found, authorization denied')
+      );
+    }
+
+    req.user = user;
     next();
   } catch (error) {
+    if (error instanceof jwt.JsonWebTokenError) {
+      return next(
+        new AuthenticationError('Invalid token, authorization denied')
+      );
+    }
     next(error);
   }
-  return;
 };

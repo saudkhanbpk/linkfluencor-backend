@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { comparePassword, generateToken } from '../utils/authUtils';
+import { comparePassword } from '../utils/authUtils';
 import { AuthProvider, UserRole, UserStatus } from '../types/enums';
 import { IUser } from '../interfaces/User';
 
@@ -51,10 +51,6 @@ userSchema.methods.verifyPassword = async function (
   password: string
 ): Promise<boolean> {
   return comparePassword(password, this.password);
-};
-
-userSchema.methods.generateAuthToken = function (): string {
-  return generateToken(this._id);
 };
 
 const User = mongoose.model<IUser>('User', userSchema);

@@ -10,7 +10,11 @@ import ConflictError from '../errors/ConflictError';
 import ValidationError from '../errors/ValidationError';
 import { addUserToBrand, getBrandByUser } from '../services/brandService';
 import NotFoundError from '../errors/NotFoundError';
-import { generateActivationToken } from '../utils/authUtils';
+import {
+  generateAccessToken,
+  generateActivationToken,
+  generateRefreshToken,
+} from '../utils/authUtils';
 import { handleEmailNotifications } from '../utils/emailUtils';
 
 export const getAllUsers = async () => {
@@ -60,15 +64,22 @@ export const activateUser = async (activationToken: string) => {
   try {
     log.info(`Fetching user with activation token: ${activationToken}`);
     const user = await User.findOne({ activationToken });
-    if (user) {
-      log.info(`Fetched user: ${user}`);
-      user.status = UserStatus.Active;
-      log.info(`Activating user: ${user}`);
-      user.activationToken = null as any;
-    } else {
+    if (!user) {
       log.warn(`User with activation token: ${activationToken} not found`);
+      throw new NotFoundError('User not found');
     }
-    return user;
+
+    log.info(`Fetched user: ${user}`);
+    user.status = UserStatus.Active;
+    log.info(`Activating user: ${user}`);
+    user.activationToken = null as any;
+    await user.save();
+    log.info(`User activated: ${user}`);
+
+    const accessToken = generateAccessToken(user.id);
+    const refreshToken = generateRefreshToken(user.id);
+
+    return { user, accessToken, refreshToken };
   } catch (error: any) {
     log.error(
       `Error fetching user with activation token ${activationToken}: ${error.message}`

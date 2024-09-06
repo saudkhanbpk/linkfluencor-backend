@@ -6,6 +6,7 @@ const validateEnv = () => {
     PORT: port({ default: 3000 }),
     MONGO_URI: str(),
     JWT_SECRET: str(),
+    JWT_REFRESH_SECRET: str(),
     APP_URL: str(),
     SESSION_SECRET: str(),
     GOOGLE_CLIENT_ID: str(),

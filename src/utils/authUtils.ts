@@ -4,6 +4,7 @@ import crypto from 'crypto';
 import { config } from '../config/env';
 import { AuthProvider } from '../types/enums';
 import AuthenticationError from '../errors/AuthenticationError';
+import { Schema } from 'mongoose';
 
 export const handlePasswordHashing = async (
   password: string,
@@ -31,12 +32,44 @@ export const comparePassword = async (
   return await bcrypt.compare(password, hashedPassword);
 };
 
-export const generateToken = (userId: string) => {
-  return jwt.sign({ id: userId }, config.jwtSecret || '', {
-    expiresIn: '1h',
+export const generateActivationToken = () => {
+  return crypto.randomBytes(32).toString('hex');
+};
+
+export const generateAccessToken = (userId: Schema.Types.ObjectId) => {
+  return jwt.sign({ id: userId }, config.jwtSecret || '', { expiresIn: '15m' });
+};
+
+export const generateRefreshToken = (userId: Schema.Types.ObjectId) => {
+  return jwt.sign({ id: userId }, config.jwtRefreshSecret || '', {
+    expiresIn: '30d',
   });
 };
 
-export const generateActivationToken = () => {
-  return crypto.randomBytes(32).toString('hex');
+export const sendTokens = (
+  res: any,
+  accessToken: string,
+  refreshToken: string
+) => {
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  res.cookie('refreshToken', refreshToken, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'None' : 'Lax',
+    domain: isProduction ? '.linfluencer.com' : 'localhost',
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  });
+
+  res.cookie('accessToken', accessToken, {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'None' : 'Lax',
+    domain: isProduction ? '.linfluencer.com' : 'localhost',
+    maxAge: 15 * 60 * 1000, // 15 minutes
+  });
+};
+
+export const verifyAccessToken = (token: string) => {
+  return jwt.verify(token, config.jwtSecret || '');
 };

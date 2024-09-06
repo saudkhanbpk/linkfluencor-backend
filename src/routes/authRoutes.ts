@@ -4,8 +4,10 @@ import {
   loginController,
   registerController,
   activateAccountController,
+  refreshTokenController,
+  logoutController,
 } from '../controllers/authController';
-import { generateToken } from '../utils/authUtils';
+// import { generateToken } from '../utils/authUtils';
 
 const router = Router({ mergeParams: true });
 
@@ -15,15 +17,17 @@ router.get(
   '/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
+router.get('/refreshAccessToken', refreshTokenController);
+router.get('/logout', logoutController);
 
-router.get(
-  '/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
-  (req, res) => {
-    const token = generateToken(req.user as string);
-    res.redirect(`/?token=${token}`);
-  }
-);
+// router.get(
+//   '/google/callback',
+//   passport.authenticate('google', { failureRedirect: '/login' }),
+//   (req, res) => {
+//     const token = generateToken(req.user as string);
+//     res.redirect(`/?token=${token}`);
+//   }
+// );
 
 router.get('/activate/:token', activateAccountController);
 
