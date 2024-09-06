@@ -58,7 +58,7 @@ export const sendTokens = (
     secure: isProduction,
     sameSite: isProduction ? 'None' : 'Lax',
     domain: isProduction ? '.linfluencer.com' : 'localhost',
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
   res.cookie('accessToken', accessToken, {
@@ -66,10 +66,14 @@ export const sendTokens = (
     secure: isProduction,
     sameSite: isProduction ? 'None' : 'Lax',
     domain: isProduction ? '.linfluencer.com' : 'localhost',
-    maxAge: 15 * 60 * 1000, // 15 minutes
+    maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 };
 
 export const verifyAccessToken = (token: string) => {
-  return jwt.verify(token, config.jwtSecret || '');
+  try {
+    return jwt.verify(token, config.jwtSecret || '');
+  } catch (error) {
+    throw new AuthenticationError('Invalid token');
+  }
 };

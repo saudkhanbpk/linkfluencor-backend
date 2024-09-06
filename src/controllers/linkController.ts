@@ -16,6 +16,7 @@ import {
   getClicksByIntervalAndLinkId,
 } from '../services/clickService';
 import { TimeInterval } from '../types/types';
+import { SortLinksByOptions } from '../types/enums';
 
 export const getAllLinksForUserController = async (
   req: Request,
@@ -24,7 +25,10 @@ export const getAllLinksForUserController = async (
 ) => {
   try {
     const userId = req.params.id;
-    const links = await getAllLinksForUser(userId);
+    const sortBy = req.query.sortBy as SortLinksByOptions;
+    const page = parseInt(req.query.page as string, 10);
+    const limit = parseInt(req.query.limit as string, 10);
+    const links = await getAllLinksForUser(userId, sortBy, page, limit);
     res.json(links);
   } catch (error: any) {
     next(error);

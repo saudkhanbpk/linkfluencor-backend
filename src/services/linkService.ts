@@ -5,7 +5,7 @@ import User from '../models/User';
 import { generateShortUrl } from '../utils/urlGenerator';
 import { detectTargetSite } from '../utils/urlUtils';
 import { ILink } from '../interfaces/Link';
-import { UserRole } from '../types/enums';
+import { SortLinksByOptions, UserRole } from '../types/enums';
 import { getUserById } from '../services/userService';
 import { extractLinksFromFile } from '../utils/uploadUtils';
 import { BulkLinkData } from '../types/interfaces';
@@ -16,7 +16,7 @@ import ConflictError from '../errors/ConflictError';
 
 export const getAllLinksForUser = async (
   userId: string,
-  sortBy: string = 'topLinks',
+  sortBy: SortLinksByOptions = SortLinksByOptions.TopLinks,
   page: number = 1,
   limit: number = 10
 ) => {
@@ -35,7 +35,7 @@ export const getAllLinksForUser = async (
     }
 
     const sortOptions: { [key: string]: any } = {
-      topLinks: { clicks: -1 },
+      topLinks: { clickCount: -1 },
       newlyAdded: { createdAt: -1 },
       oldLinks: { createdAt: 1 },
       affiliatedLinks: { isAffiliated: -1 },
