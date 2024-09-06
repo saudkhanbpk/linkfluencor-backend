@@ -90,6 +90,21 @@ export const loginController = async (req: Request, res: Response) => {
   return;
 };
 
+export const getUserController = async (req: Request, res: Response) => {
+  try {
+    const user = req.user;
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json(user);
+  } catch (error: any) {
+    res.status(500).json({ message: error.message || 'Failed to get user' });
+  }
+  return;
+};
+
 export const refreshTokenController = async (req: Request, res: Response) => {
   const { refreshToken } = req.cookies;
 
@@ -104,7 +119,7 @@ export const refreshTokenController = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'User not found' });
     }
 
-    const newAccessToken = generateAccessToken(user._id);
+    const newAccessToken = generateAccessToken(user.id);
 
     sendTokens(res, newAccessToken, refreshToken);
 

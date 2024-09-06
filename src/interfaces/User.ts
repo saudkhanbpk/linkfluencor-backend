@@ -2,6 +2,7 @@ import { Document, Schema } from 'mongoose';
 import { AuthProvider, UserRole, UserStatus } from 'types/enums';
 
 export interface IUser extends Document {
+  _id?: string;
   firstName: string;
   lastName: string;
   email: string;

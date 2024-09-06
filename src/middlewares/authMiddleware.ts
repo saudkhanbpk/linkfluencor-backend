@@ -1,30 +1,30 @@
-// middlewares/authMiddleware.js
+// middlewares/authMiddleware.ts
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import User from '../models/User';
+import User from '../models/User'; // Assurez-vous que IUser est correctement importé depuis votre modèle
 import AuthenticationError from '../errors/AuthenticationError';
 import { DecodedToken } from '../types/interfaces';
-import { verifyAccessToken } from '../utils/authUtils';
+import { config } from '../config/env'; // Contient jwtSecret et autres configurations nécessaires
 
-interface CustomRequest extends Request {
-  user?: any;
-}
-
+// Middleware d'authentification qui lit le token depuis les cookies
 export const authMiddleware = async (
-  req: CustomRequest,
+  req: Request,
   _res: Response,
   next: NextFunction
 ) => {
-  const authHeader = req.header('Authorization');
-  const token = authHeader?.replace('Bearer ', '');
+  // Récupérer l'Access Token depuis les cookies
+  const token = req.cookies.accessToken;
 
+  // Vérifier si le token est absent
   if (!token) {
     return next(new AuthenticationError('No token, authorization denied'));
   }
 
   try {
-    const decoded = verifyAccessToken(token) as DecodedToken;
+    // Vérifier et décoder le token
+    const decoded = jwt.verify(token, config.jwtSecret || '') as DecodedToken;
 
+    // Récupérer l'utilisateur depuis la base de données
     const user = await User.findById(decoded.id).select('-password');
     if (!user) {
       return next(
@@ -32,6 +32,7 @@ export const authMiddleware = async (
       );
     }
 
+    // Attacher l'utilisateur à la requête pour une utilisation ultérieure
     req.user = user;
     next();
   } catch (error) {

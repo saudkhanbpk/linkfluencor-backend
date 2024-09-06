@@ -76,7 +76,7 @@ export const subscribeUserController = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    return await createSubscription(user._id, user.role, req.body.plan);
+    return await createSubscription(user.id, user.role, req.body.plan);
   } catch (error) {
     res.status(500).json({ message: error });
   }
@@ -89,7 +89,7 @@ export const getClicksLeftController = async (req: Request, res: Response) => {
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    const clicksLeft = await getClicksLeft(user._id, user.role);
+    const clicksLeft = await getClicksLeft(user.id, user.role);
     res.json({ clicksLeft });
   } catch (error) {
     res.status(500).json({ message: error });

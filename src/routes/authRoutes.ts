@@ -3,22 +3,26 @@ import passport from '../config/passportConfig';
 import {
   loginController,
   registerController,
+  getUserController,
   activateAccountController,
   refreshTokenController,
   logoutController,
 } from '../controllers/authController';
+import { authMiddleware } from '../middlewares/authMiddleware';
 // import { generateToken } from '../utils/authUtils';
 
 const router = Router({ mergeParams: true });
 
 router.post('/login', loginController);
 router.post('/register', registerController);
+router.get('/me', authMiddleware, getUserController);
+router.get('/refreshAccessToken', refreshTokenController);
+router.get('/logout', logoutController);
+
 router.get(
   '/google',
   passport.authenticate('google', { scope: ['profile', 'email'] })
 );
-router.get('/refreshAccessToken', refreshTokenController);
-router.get('/logout', logoutController);
 
 // router.get(
 //   '/google/callback',
