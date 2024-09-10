@@ -58,10 +58,10 @@ export const updateShortLinkController = async (
 ) => {
   try {
     const { linkId } = req.params;
-    const { newShortUrl } = req.body;
+    const { shortUrl, tags } = req.body;
     const userId = req.params.id;
 
-    const updatedLink = await updateShortLink(userId, linkId, newShortUrl);
+    const updatedLink = await updateShortLink(userId, linkId, shortUrl, tags);
     res.status(200).json(updatedLink);
   } catch (error: any) {
     next(error);
@@ -130,7 +130,23 @@ export const getClicksForLinkController = async (
   try {
     const { linkId } = req.params;
     const clicks = await getClicksForLink(linkId);
+
     res.json(clicks);
+  } catch (error: any) {
+    next(error);
+  }
+};
+
+export const getTotalClicksByUserController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const linkId = req.params.id;
+    const totalClicks = await getClicksForLink(linkId);
+
+    res.json(totalClicks.length);
   } catch (error: any) {
     next(error);
   }

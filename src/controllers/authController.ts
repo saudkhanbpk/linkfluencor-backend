@@ -7,8 +7,9 @@ import ValidationError from '../errors/ValidationError';
 import { NextFunction } from 'express';
 import {
   generateAccessToken,
+  generateRefreshToken,
   sendTokens,
-  verifyAccessToken,
+  verifyRefreshToken,
 } from '../utils/authUtils';
 import { JwtPayload } from 'jsonwebtoken';
 
@@ -113,15 +114,16 @@ export const refreshTokenController = async (req: Request, res: Response) => {
   }
 
   try {
-    const decoded = verifyAccessToken(refreshToken) as JwtPayload;
+    const decoded = verifyRefreshToken(refreshToken) as JwtPayload;
     const user = await getUserById(decoded.id);
     if (!user) {
-      return res.status(401).json({ message: 'User not found' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
     const newAccessToken = generateAccessToken(user.id);
+    const newRefreshToken = generateRefreshToken(user.id);
 
-    sendTokens(res, newAccessToken, refreshToken);
+    sendTokens(res, newAccessToken, newRefreshToken);
 
     res.status(200).json({ message: 'Token refreshed successfully' });
   } catch (error) {

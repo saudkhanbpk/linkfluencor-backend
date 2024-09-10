@@ -86,6 +86,11 @@ export const getTopCountryByLink = async (linkId: string): Promise<string> => {
   try {
     log.info(`Getting top country for link: ${linkId}`);
     const clicks = await Click.find({ linkId });
+
+    if (clicks.length === 0) {
+      return 'Unknown';
+    }
+
     const countryCounts = clicks.reduce(
       (acc, click) => {
         acc[click.country] = (acc[click.country] || 0) + 1;
@@ -107,6 +112,11 @@ export const getTopCityByLink = async (linkId: string): Promise<string> => {
   try {
     log.info(`Getting top city for link: ${linkId}`);
     const clicks = await Click.find({ linkId });
+
+    if (clicks.length === 0) {
+      return 'Unknown';
+    }
+
     const cityCounts = clicks.reduce(
       (acc, click) => {
         acc[click.city] = (acc[click.city] || 0) + 1;
@@ -130,6 +140,11 @@ export const getBestAverageTimeToEngageByLink = async (
   try {
     log.info(`Getting best average time to engage for link: ${linkId}`);
     const clicks = await Click.find({ linkId });
+
+    if (clicks.length === 0) {
+      return 0;
+    }
+
     const engagementTimes = clicks.map(click => click.clickedAt.getTime());
     const intervals = engagementTimes.map(time =>
       Math.floor(time / (3 * 60 * 60 * 1000))
@@ -182,6 +197,11 @@ export const getClicksGranularityByLink = async (
   try {
     log.info(`Getting clicks by granularity for link: ${linkId}`);
     const clicks = await Click.find({ linkId });
+
+    if (clicks.length === 0) {
+      return 'Unknown';
+    }
+
     const formatMap = {
       hour: 'HH',
       day: 'dddd',
@@ -314,6 +334,11 @@ export const getBestPerformingPlatformByUser = async (
   try {
     log.info(`Getting best performing platform for user: ${userId}`);
     const clicks = await getClicksByIntervalAndUser(interval, userId);
+
+    if (clicks.length === 0) {
+      return 'Unknown';
+    }
+
     const platformCounts = clicks.reduce(
       (acc, click) => {
         acc[click.platform] = (acc[click.platform] || 0) + 1;
@@ -340,6 +365,11 @@ export const getTop5BestPerformingPlatformsByUser = async (
   try {
     log.info(`Getting top 5 best performing platforms for user: ${userId}`);
     const clicks = await getClicksByIntervalAndUser(interval, userId);
+
+    if (clicks.length === 0) {
+      return [];
+    }
+
     const platformCounts = clicks.reduce(
       (acc, click) => {
         acc[click.platform] = (acc[click.platform] || 0) + 1;
@@ -367,6 +397,11 @@ export const getTopCountryByUser = async (
   try {
     log.info(`Getting top country for user: ${userId}`);
     const clicks = await getClicksByIntervalAndUser(interval, userId);
+
+    if (clicks.length === 0) {
+      return 'Unknown';
+    }
+
     const countryCounts = clicks.reduce(
       (acc, click) => {
         acc[click.country] = (acc[click.country] || 0) + 1;
@@ -393,6 +428,11 @@ export const getBestCityByUser = async (
   try {
     log.info(`Getting best city for user: ${userId}`);
     const clicks = await getClicksByIntervalAndUser(interval, userId);
+
+    if (clicks.length === 0) {
+      return 'Unknown';
+    }
+
     const cityCounts = clicks.reduce(
       (acc, click) => {
         acc[click.city] = (acc[click.city] || 0) + 1;
@@ -419,6 +459,11 @@ export const getBestAverageTimeToEngageByUser = async (
   try {
     log.info(`Getting best average time to engage for user: ${userId}`);
     const clicks = await getClicksByIntervalAndUser(interval, userId);
+
+    if (clicks.length === 0) {
+      return 0;
+    }
+
     const engagementTimes = clicks.map(click => click.clickedAt.getTime());
     const intervals = engagementTimes.map(time =>
       Math.floor(time / (3 * 60 * 60 * 1000))
@@ -454,6 +499,11 @@ export const getClicksGranularityByUser = async (
       `Getting clicks by granularity for user: ${userId} in interval: ${interval}`
     );
     const clicks = await getClicksByIntervalAndUser(interval, userId);
+
+    if (clicks.length === 0) {
+      return {};
+    }
+
     const formatMap = {
       hour: 'HH',
       day: 'dddd',

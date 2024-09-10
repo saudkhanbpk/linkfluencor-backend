@@ -194,7 +194,8 @@ export const updateLink = async (
 export const updateShortLink = async (
   userId: string,
   linkId: string,
-  newShortUrl: string
+  newShortUrl: string,
+  tags: string[]
 ): Promise<ILink> => {
   try {
     log.info(
@@ -241,12 +242,13 @@ export const updateShortLink = async (
     }
 
     const existingLink = await Link.findOne({ shortUrl: newShortUrl });
-    if (existingLink) {
+    if (existingLink && existingLink._id.toString() !== linkId) {
       log.warn(`Short URL: ${newShortUrl} is already in use`);
       throw new ConflictError('Short URL already in use');
     }
 
     link.shortUrl = newShortUrl;
+    link.tags = tags;
     await link.save();
     log.info(
       `Short link with id: ${linkId} updated to new short URL: ${newShortUrl}`

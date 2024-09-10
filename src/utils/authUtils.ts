@@ -77,3 +77,14 @@ export const verifyAccessToken = (token: string) => {
     throw new AuthenticationError('Invalid token');
   }
 };
+
+export const verifyRefreshToken = (token: string) => {
+  try {
+    return jwt.verify(token, config.jwtRefreshSecret || '');
+  } catch (error) {
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new Error('Refresh token expired');
+    }
+    throw new Error('Invalid refresh token');
+  }
+};

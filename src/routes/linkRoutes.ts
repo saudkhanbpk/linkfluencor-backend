@@ -15,6 +15,7 @@ import {
   getClicksByIntervalAndLinkIdController,
   deleteLinkController,
   deleteMultipleLinksController,
+  getTotalClicksByUserController,
 } from '../controllers/linkController';
 
 const router = express.Router({ mergeParams: true });
@@ -41,6 +42,12 @@ router.get(
   param('linkId').isMongoId().withMessage('Invalid link ID'),
   validateRequest,
   getClicksForLinkController
+);
+router.get(
+  '/:linkId/total-clicks',
+  param('linkId').isMongoId().withMessage('Invalid link ID'),
+  validateRequest,
+  getTotalClicksByUserController
 );
 router.get(
   '/:linkId/clicks-trend',
