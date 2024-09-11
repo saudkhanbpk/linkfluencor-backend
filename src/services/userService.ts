@@ -11,9 +11,11 @@ import ValidationError from '../errors/ValidationError';
 import { addUserToBrand, getBrandByUser } from '../services/brandService';
 import NotFoundError from '../errors/NotFoundError';
 import {
+  comparePassword,
   generateAccessToken,
   generateActivationToken,
   generateRefreshToken,
+  hashPassword,
 } from '../utils/authUtils';
 import { handleEmailNotifications } from '../utils/emailUtils';
 
@@ -253,6 +255,37 @@ export const inviteToBrand = async (
     log.error(
       `Error inviting user ${invitedUserEmail} to brand ${brandId}: ${error.message}`
     );
+    throw error;
+  }
+};
+
+export const updatePassword = async (
+  userId: string,
+  newPassword: string,
+  oldPassword: string
+) => {
+  try {
+    log.info(`Updating password for user ${userId}`);
+
+    const user = await getUserById(userId);
+    if (!user) {
+      throw new NotFoundError('User not found');
+    }
+
+    const isOldPasswordCorrect = await comparePassword(
+      oldPassword,
+      user.password
+    );
+    if (!isOldPasswordCorrect) {
+      throw new ValidationError('Old password is incorrect');
+    }
+
+    user.password = await hashPassword(newPassword);
+    await user.save();
+
+    log.info(`Updated password for user ${userId}`);
+  } catch (error: any) {
+    log.error(`Error updating password for user ${userId}: ${error.message}`);
     throw error;
   }
 };

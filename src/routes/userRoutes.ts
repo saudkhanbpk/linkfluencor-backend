@@ -15,6 +15,7 @@ import {
   getBestCityByUserController,
   getBestAverageTimeToEngageByUserController,
   getClicksGranularityByUserController,
+  updatePasswordController,
 } from '../controllers/userController';
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { validateRequest } from '../middlewares/validateRequest';
@@ -36,6 +37,13 @@ router.put(
   validateRequest,
   authMiddleware,
   updateUserController
+);
+router.put(
+  '/:id/password',
+  param('id').isMongoId().withMessage('Invalid user ID'),
+  validateRequest,
+  authMiddleware,
+  updatePasswordController
 );
 router.delete(
   '/:id',

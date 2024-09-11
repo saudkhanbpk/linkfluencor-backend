@@ -5,6 +5,7 @@ import {
   updateUser,
   deleteUser,
   inviteToBrand,
+  updatePassword,
 } from '../services/userService';
 import {
   createSubscription,
@@ -230,6 +231,19 @@ export const inviteToBrandController = async (req: Request, res: Response) => {
       req.body.brandId,
       req.body.email,
       req.body.role
+    );
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
+};
+
+export const updatePasswordController = async (req: Request, res: Response) => {
+  try {
+    return await updatePassword(
+      req.params.id,
+      req.body.newPassword,
+      req.body.oldPassword
     );
   } catch (error) {
     res.status(500).json({ message: error });
