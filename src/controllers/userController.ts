@@ -20,6 +20,7 @@ import {
   getBestCityByUser,
   getBestAverageTimeToEngageByUser,
   getClicksGranularityByUser,
+  getFormattedClicksByIntervalAndUser,
 } from '../services/clickService';
 import { TimeGranularity, TimeInterval } from '../types/types';
 
@@ -195,8 +196,8 @@ export const getBestAverageTimeToEngageByUserController = async (
   try {
     const interval = req.query.interval as TimeInterval;
     const bestAverageTimeToEngage = await getBestAverageTimeToEngageByUser(
-      interval,
-      req.params.id
+      req.params.id,
+      interval
     );
     res.json(bestAverageTimeToEngage);
   } catch (error) {
@@ -245,6 +246,23 @@ export const updatePasswordController = async (req: Request, res: Response) => {
       req.body.newPassword,
       req.body.oldPassword
     );
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
+};
+
+export const getFormattedClicksByIntervalAndUserController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const interval = req.query.interval as TimeInterval;
+    const clicks = await getFormattedClicksByIntervalAndUser(
+      req.params.id,
+      interval
+    );
+    res.json(clicks);
   } catch (error) {
     res.status(500).json({ message: error });
   }

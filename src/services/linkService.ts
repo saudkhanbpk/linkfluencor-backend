@@ -13,6 +13,7 @@ import ValidationError from '../errors/ValidationError';
 import NotFoundError from '../errors/NotFoundError';
 import AuthorizationError from '../errors/AuthorizationError';
 import ConflictError from '../errors/ConflictError';
+import { TimeInterval } from 'types/types';
 
 export const getAllLinksForUser = async (
   userId: string,
@@ -372,9 +373,14 @@ export const deleteMultipleLinks = async (
   }
 };
 
-export const getTopTargetSites = async (userId: string) => {
+export const getTopTargetSites = async (
+  userId: string,
+  interval: TimeInterval = 'year'
+): Promise<{ targetSite: string; count: number }[]> => {
   try {
-    log.info(`Fetching top target sites for user with id: ${userId}`);
+    log.info(
+      `Fetching top target sites for user with id: ${userId} for interval: ${interval}`
+    );
 
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       log.error('Invalid user ID format');
@@ -387,17 +393,65 @@ export const getTopTargetSites = async (userId: string) => {
       throw new NotFoundError('User not found');
     }
 
+    const startDate = new Date();
+    switch (interval) {
+      case 'day':
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case 'week':
+        startDate.setDate(startDate.getDate() - startDate.getDay());
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case 'month':
+        startDate.setDate(1);
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case 'year':
+        startDate.setMonth(0, 1);
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      default:
+        throw new ValidationError('Invalid interval');
+    }
+
+    log.info(`Filtering links from start date: ${startDate.toISOString()}`);
+
     const targetSites = await Link.aggregate([
-      { $match: { createdBy: user._id } },
-      { $group: { _id: '$targetSite', count: { $sum: 1 } } },
-      { $sort: { count: -1 } },
-      { $limit: 5 },
+      {
+        $match: {
+          createdBy: user._id,
+          createdAt: { $gte: startDate },
+        },
+      },
+      {
+        $group: {
+          _id: '$targetSite',
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: {
+          count: -1,
+        },
+      },
+      {
+        $limit: 5,
+      },
+      {
+        $project: {
+          _id: '$_id',
+          count: 1,
+        },
+      },
     ]);
 
-    log.info(`Found top target sites for user with id: ${userId}`);
+    log.info(`Aggregated target sites: ${JSON.stringify(targetSites)}`);
+
     return targetSites;
   } catch (error: any) {
-    log.error(`Error fetching top target sites for user with id: ${userId}`);
+    log.error(
+      `Error fetching top target sites for user with id: ${userId}: ${error.message}`
+    );
     throw error;
   }
 };

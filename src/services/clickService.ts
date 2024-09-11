@@ -271,6 +271,101 @@ export const getClicksByIntervalAndLinkId = async (
   }
 };
 
+export const getFormattedClicksByIntervalAndUser = async (
+  userId: string,
+  interval: TimeInterval
+): Promise<Record<string, number>> => {
+  try {
+    log.info(`Getting clicks for user: ${userId} in interval: ${interval}`);
+
+    const now = moment().tz('Europe/Paris');
+    let startOfInterval: Moment, endOfInterval: Moment;
+
+    switch (interval) {
+      case 'day':
+        startOfInterval = now.clone().startOf('day');
+        endOfInterval = now.clone().endOf('day');
+        break;
+      case 'week':
+        startOfInterval = now.clone().startOf('week');
+        endOfInterval = now.clone().endOf('week');
+        break;
+      case 'year':
+        startOfInterval = now.clone().startOf('year');
+        endOfInterval = now.clone().endOf('year');
+        break;
+      default:
+        throw new Error('Invalid interval');
+    }
+
+    const clicks = await Click.find({
+      createdBy: userId,
+      clickedAt: {
+        $gte: startOfInterval.toDate(),
+        $lte: endOfInterval.toDate(),
+      },
+    });
+
+    const counts: Record<string, number> = {};
+
+    if (interval === 'day') {
+      for (let i = 0; i < 24; i += 3) {
+        const slotLabel = `${i.toString().padStart(2, '0')}:00 - ${(i + 3)
+          .toString()
+          .padStart(2, '0')}:00`;
+        counts[slotLabel] = 0;
+      }
+    } else if (interval === 'week') {
+      const daysOfWeek = moment.weekdays();
+      daysOfWeek.forEach(day => {
+        counts[day] = 0;
+      });
+    } else if (interval === 'year') {
+      const monthsOfYear = moment.months();
+      monthsOfYear.forEach(month => {
+        counts[month] = 0;
+      });
+    }
+
+    clicks.forEach(click => {
+      const clickedAt = moment(click.clickedAt).tz('Europe/Paris');
+
+      switch (interval) {
+        case 'day': {
+          const hourSlot = Math.floor(clickedAt.hours() / 3) * 3;
+          const slotLabel = `${hourSlot.toString().padStart(2, '0')}:00 - ${(
+            hourSlot + 3
+          )
+            .toString()
+            .padStart(2, '0')}:00`;
+          counts[slotLabel] = (counts[slotLabel] || 0) + 1;
+          break;
+        }
+
+        case 'week': {
+          const dayOfWeek = clickedAt.format('dddd');
+          counts[dayOfWeek] = (counts[dayOfWeek] || 0) + 1;
+          break;
+        }
+
+        case 'year': {
+          const month = clickedAt.format('MMMM');
+          counts[month] = (counts[month] || 0) + 1;
+          break;
+        }
+      }
+    });
+
+    return counts;
+  } catch (error: any) {
+    log.error(
+      `Error getting clicks for user: ${userId} in interval: ${interval}`,
+      error
+    );
+    throw error;
+  }
+};
+
 export const getClicksGranularityByLink = async (
   linkId: string,
   granularity: TimeGranularity
@@ -537,22 +632,51 @@ export const getBestCityByUser = async (
 };
 
 export const getBestAverageTimeToEngageByUser = async (
-  interval: TimeInterval,
-  userId: string
-): Promise<number> => {
+  createdBy: string,
+  interval: TimeInterval = 'year'
+): Promise<string> => {
   try {
-    log.info(`Getting best average time to engage for user: ${userId}`);
-    const clicks = await getClicksByIntervalAndUser(interval, userId);
+    log.info(
+      `Getting best average time to engage for user: ${createdBy} with interval: ${interval}`
+    );
+
+    // Define the start date based on the interval
+    const startDate = new Date();
+    switch (interval) {
+      case 'day':
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case 'week':
+        startDate.setDate(startDate.getDate() - startDate.getDay());
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case 'month':
+        startDate.setDate(1);
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      case 'year':
+        startDate.setMonth(0, 1);
+        startDate.setHours(0, 0, 0, 0);
+        break;
+      default:
+        throw new Error('Invalid interval');
+    }
+
+    const clicks = await Click.find({
+      createdBy,
+      clickedAt: { $gte: startDate },
+    });
 
     if (clicks.length === 0) {
-      return 0;
+      return 'No data';
     }
 
     const engagementTimes = clicks.map(click => click.clickedAt.getTime());
     const intervals = engagementTimes.map(time =>
-      Math.floor(time / (3 * 60 * 60 * 1000))
+      Math.floor((time / (3 * 60 * 60 * 1000)) % 8)
     );
 
+    // Count occurrences of each interval
     const intervalCounts = intervals.reduce(
       (acc, interval) => {
         acc[interval] = (acc[interval] || 0) + 1;
@@ -564,10 +688,18 @@ export const getBestAverageTimeToEngageByUser = async (
     const bestInterval = Object.keys(intervalCounts).reduce((a, b) =>
       intervalCounts[parseInt(a)] > intervalCounts[parseInt(b)] ? a : b
     );
-    return parseInt(bestInterval) * 3;
+
+    const bestHour = parseInt(bestInterval) * 3;
+    const startHour = bestHour % 24;
+    const endHour = (startHour + 3) % 24;
+
+    // Format the interval for display
+    const formattedInterval = `${startHour.toString().padStart(2, '0')}:00 - ${endHour.toString().padStart(2, '0')}:00`;
+
+    return formattedInterval;
   } catch (error: any) {
     log.error(
-      `Error getting best average time to engage for user: ${userId} in interval: ${interval}`
+      `Error while getting best average time to engage for user: ${createdBy}: ${error.message}`
     );
     throw error;
   }

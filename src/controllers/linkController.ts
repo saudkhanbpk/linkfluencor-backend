@@ -235,7 +235,8 @@ export const getTopTargetSitesController = async (
 ) => {
   try {
     const userId = req.params.id;
-    const clicks = await getTopTargetSites(userId);
+    const { interval } = req.query;
+    const clicks = await getTopTargetSites(userId, interval as TimeInterval);
     res.json(clicks);
   } catch (error: any) {
     next(error);

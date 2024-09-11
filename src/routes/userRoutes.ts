@@ -16,6 +16,7 @@ import {
   getBestAverageTimeToEngageByUserController,
   getClicksGranularityByUserController,
   updatePasswordController,
+  getFormattedClicksByIntervalAndUserController,
 } from '../controllers/userController';
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { validateRequest } from '../middlewares/validateRequest';
@@ -72,6 +73,13 @@ router.get(
   validateRequest,
   authMiddleware,
   getClicksByIntervalAndUserController
+);
+router.get(
+  '/:id/clicks-by-user-interval',
+  param('id').isMongoId().withMessage('Invalid user ID'),
+  validateRequest,
+  authMiddleware,
+  getFormattedClicksByIntervalAndUserController
 );
 router.get(
   '/:id/total-clicks',
