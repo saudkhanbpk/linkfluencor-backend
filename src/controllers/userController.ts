@@ -16,7 +16,7 @@ import {
   getTotalClicksByUser,
   getBestPerformingPlatformByUser,
   getTop5BestPerformingPlatformsByUser,
-  getTopCountryByUser,
+  getTopCountriesByUser,
   getBestCityByUser,
   getBestAverageTimeToEngageByUser,
   getClicksGranularityByUser,
@@ -166,7 +166,7 @@ export const getTopCountryByUserController = async (
 ) => {
   try {
     const interval = req.query.interval as TimeInterval;
-    const topCountry = await getTopCountryByUser(interval, req.params.id);
+    const topCountry = await getTopCountriesByUser(interval, req.params.id);
     res.json(topCountry);
   } catch (error) {
     res.status(500).json({ message: error });

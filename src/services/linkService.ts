@@ -371,3 +371,33 @@ export const deleteMultipleLinks = async (
     throw error;
   }
 };
+
+export const getTopTargetSites = async (userId: string) => {
+  try {
+    log.info(`Fetching top target sites for user with id: ${userId}`);
+
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      log.error('Invalid user ID format');
+      throw new ValidationError('Invalid user ID format');
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      log.warn(`User with id: ${userId} not found`);
+      throw new NotFoundError('User not found');
+    }
+
+    const targetSites = await Link.aggregate([
+      { $match: { createdBy: user._id } },
+      { $group: { _id: '$targetSite', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+    ]);
+
+    log.info(`Found top target sites for user with id: ${userId}`);
+    return targetSites;
+  } catch (error: any) {
+    log.error(`Error fetching top target sites for user with id: ${userId}`);
+    throw error;
+  }
+};

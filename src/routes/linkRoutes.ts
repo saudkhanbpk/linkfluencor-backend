@@ -16,6 +16,7 @@ import {
   deleteLinkController,
   deleteMultipleLinksController,
   getTotalClicksByUserController,
+  getTopTargetSitesController,
 } from '../controllers/linkController';
 
 const router = express.Router({ mergeParams: true });
@@ -31,6 +32,7 @@ router.delete(
 );
 router.delete('/', deleteMultipleLinksController);
 router.post('/upload', upload.single('file'), bulkUpload);
+router.get('/top-apps', validateRequest, getTopTargetSitesController);
 router.put(
   '/:linkId',
   param('linkId').isMongoId().withMessage('Invalid link ID'),

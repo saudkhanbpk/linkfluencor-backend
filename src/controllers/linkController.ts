@@ -6,6 +6,7 @@ import {
   bulkCreateShortLinks,
   deleteLink,
   deleteMultipleLinks,
+  getTopTargetSites,
 } from '../services/linkService';
 import {
   getClicksForLink,
@@ -221,6 +222,20 @@ export const getClicksByIntervalAndLinkIdController = async (
       linkId,
       interval as TimeInterval
     );
+    res.json(clicks);
+  } catch (error: any) {
+    next(error);
+  }
+};
+
+export const getTopTargetSitesController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userId = req.params.id;
+    const clicks = await getTopTargetSites(userId);
     res.json(clicks);
   } catch (error: any) {
     next(error);

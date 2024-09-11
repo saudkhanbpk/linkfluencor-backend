@@ -471,16 +471,16 @@ export const getTop5BestPerformingPlatformsByUser = async (
   }
 };
 
-export const getTopCountryByUser = async (
-  interval: TimeInterval,
+export const getTopCountriesByUser = async (
+  interval: TimeInterval = 'year',
   userId: string
-): Promise<string> => {
+): Promise<{ country: string; clicks: number }[]> => {
   try {
-    log.info(`Getting top country for user: ${userId}`);
+    log.info(`Getting top countries for user: ${userId}`);
     const clicks = await getClicksByIntervalAndUser(interval, userId);
 
     if (clicks.length === 0) {
-      return 'Unknown';
+      return [{ country: 'Unknown', clicks: 0 }];
     }
 
     const countryCounts = clicks.reduce(
@@ -491,12 +491,15 @@ export const getTopCountryByUser = async (
       {} as Record<string, number>
     );
 
-    return Object.keys(countryCounts).reduce((a, b) =>
-      countryCounts[a] > countryCounts[b] ? a : b
-    );
+    const topCountries = Object.entries(countryCounts)
+      .map(([country, clicks]) => ({ country, clicks }))
+      .sort((a, b) => b.clicks - a.clicks)
+      .slice(0, 10);
+
+    return topCountries;
   } catch (error: any) {
     log.error(
-      `Error getting top country for user: ${userId} in interval: ${interval}`
+      `Error getting top countries for user: ${userId} in interval: ${interval}`
     );
     throw error;
   }

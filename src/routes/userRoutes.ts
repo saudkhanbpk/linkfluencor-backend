@@ -95,7 +95,7 @@ router.get(
   getTop5BestPerformingPlatformsByUserController
 );
 router.get(
-  '/:id/top-country',
+  '/:id/top-countries',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
   authMiddleware,
@@ -126,7 +126,7 @@ router.use(
   '/:id/links',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  // authMiddleware,
+  authMiddleware,
   linkRoutes
 );
 
