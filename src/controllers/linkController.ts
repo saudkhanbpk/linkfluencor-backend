@@ -218,8 +218,8 @@ export const getClicksByIntervalAndLinkIdController = async (
     const { linkId } = req.params;
     const { interval } = req.query;
     const clicks = await getClicksByIntervalAndLinkId(
-      interval as TimeInterval,
-      linkId
+      linkId,
+      interval as TimeInterval
     );
     res.json(clicks);
   } catch (error: any) {

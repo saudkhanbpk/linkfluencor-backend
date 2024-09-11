@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import moment from 'moment';
+import moment, { Moment } from 'moment-timezone';
 import geoip from 'geoip-lite';
 import log from '../utils/logger';
 import requestIp from 'request-ip';
@@ -133,21 +133,21 @@ export const getTopCityByLink = async (linkId: string): Promise<string> => {
     throw error;
   }
 };
-
 export const getBestAverageTimeToEngageByLink = async (
   linkId: string
-): Promise<number> => {
+): Promise<string> => {
   try {
     log.info(`Getting best average time to engage for link: ${linkId}`);
     const clicks = await Click.find({ linkId });
 
     if (clicks.length === 0) {
-      return 0;
+      return 'No data';
     }
 
     const engagementTimes = clicks.map(click => click.clickedAt.getTime());
+
     const intervals = engagementTimes.map(time =>
-      Math.floor(time / (3 * 60 * 60 * 1000))
+      Math.floor((time / (3 * 60 * 60 * 1000)) % 8)
     );
 
     const intervalCounts = intervals.reduce(
@@ -161,30 +161,111 @@ export const getBestAverageTimeToEngageByLink = async (
     const bestInterval = Object.keys(intervalCounts).reduce((a, b) =>
       intervalCounts[parseInt(a)] > intervalCounts[parseInt(b)] ? a : b
     );
-    return parseInt(bestInterval) * 3;
+
+    const bestHour = parseInt(bestInterval) * 3;
+
+    const startHour = bestHour % 24;
+    const endHour = (startHour + 3) % 24;
+
+    const formattedInterval = `${startHour.toString().padStart(2, '0')}:00 - ${endHour.toString().padStart(2, '0')}:00`;
+
+    return formattedInterval;
   } catch (error: any) {
-    log.error(`Error getting best average time to engage for link: ${linkId}`);
+    log.error(`Error while getting best average time to engage : ${linkId}`);
     throw error;
   }
 };
 
-export const getClicksByIntervalAndLinkId = (
-  interval: TimeInterval,
-  linkId: string
-) => {
+export const getClicksByIntervalAndLinkId = async (
+  linkId: string,
+  interval: TimeInterval
+): Promise<Record<string, number>> => {
   try {
     log.info(`Getting clicks for link: ${linkId} in interval: ${interval}`);
-    const now = moment();
-    const startOfInterval = now.startOf(interval).toDate();
-    const endOfInterval = now.endOf(interval).toDate();
 
-    return Click.find({
+    const now = moment().tz('Europe/Paris');
+    let startOfInterval: Moment, endOfInterval: Moment;
+
+    switch (interval) {
+      case 'day':
+        startOfInterval = now.clone().startOf('day');
+        endOfInterval = now.clone().endOf('day');
+        break;
+      case 'week':
+        startOfInterval = now.clone().startOf('week');
+        endOfInterval = now.clone().endOf('week');
+        break;
+      case 'year':
+        startOfInterval = now.clone().startOf('year');
+        endOfInterval = now.clone().endOf('year');
+        break;
+      default:
+        throw new Error('Invalid interval');
+    }
+
+    const clicks = await Click.find({
       linkId,
-      clickedAt: { $gte: startOfInterval, $lt: endOfInterval },
+      clickedAt: {
+        $gte: startOfInterval.toDate(),
+        $lte: endOfInterval.toDate(),
+      },
     });
+
+    const counts: Record<string, number> = {};
+
+    if (interval === 'day') {
+      for (let i = 0; i < 24; i += 3) {
+        const slotLabel = `${i.toString().padStart(2, '0')}:00 - ${(i + 3)
+          .toString()
+          .padStart(2, '0')}:00`;
+        counts[slotLabel] = 0;
+      }
+    } else if (interval === 'week') {
+      const daysOfWeek = moment.weekdays();
+      daysOfWeek.forEach(day => {
+        counts[day] = 0;
+      });
+    } else if (interval === 'year') {
+      const monthsOfYear = moment.months();
+      monthsOfYear.forEach(month => {
+        counts[month] = 0;
+      });
+    }
+
+    clicks.forEach(click => {
+      const clickedAt = moment(click.clickedAt).tz('Europe/Paris');
+
+      switch (interval) {
+        case 'day': {
+          const hourSlot = Math.floor(clickedAt.hours() / 3) * 3;
+          const slotLabel = `${hourSlot.toString().padStart(2, '0')}:00 - ${(
+            hourSlot + 3
+          )
+            .toString()
+            .padStart(2, '0')}:00`;
+          counts[slotLabel] = (counts[slotLabel] || 0) + 1;
+          break;
+        }
+
+        case 'week': {
+          const dayOfWeek = clickedAt.format('dddd');
+          counts[dayOfWeek] = (counts[dayOfWeek] || 0) + 1;
+          break;
+        }
+
+        case 'year': {
+          const month = clickedAt.format('MMMM');
+          counts[month] = (counts[month] || 0) + 1;
+          break;
+        }
+      }
+    });
+
+    return counts;
   } catch (error: any) {
     log.error(
-      `Error getting clicks for link: ${linkId} in interval: ${interval}`
+      `Error getting clicks for link: ${linkId} in interval: ${interval}`,
+      error
     );
     throw error;
   }
