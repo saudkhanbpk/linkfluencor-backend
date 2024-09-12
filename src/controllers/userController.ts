@@ -6,6 +6,7 @@ import {
   deleteUser,
   inviteToBrand,
   updatePassword,
+  getProfileCompletion,
 } from '../services/userService';
 import {
   createSubscription,
@@ -263,6 +264,21 @@ export const getFormattedClicksByIntervalAndUserController = async (
       interval
     );
     res.json(clicks);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
+};
+
+export const getProfileCompletionController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const userId = req.params.id;
+
+    const profileCompletion = await getProfileCompletion(userId);
+    res.json(profileCompletion);
   } catch (error) {
     res.status(500).json({ message: error });
   }
