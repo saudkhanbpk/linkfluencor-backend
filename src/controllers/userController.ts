@@ -10,6 +10,7 @@ import {
 import {
   createSubscription,
   getClicksLeft,
+  processStripeOneTimePayment,
 } from '../services/subscriptionService';
 import {
   getClicksByIntervalAndUser,
@@ -72,18 +73,56 @@ export const deleteUserController = async (req: Request, res: Response) => {
   return;
 };
 
+// export const subscribeUserController = async (req: Request, res: Response) => {
+//   try {
+//     const user = await getUserById(req.params.id);
+//     if (!user) {
+//       return res.status(404).json({ message: 'User not found' });
+//     }
+//     return await createSubscription(user.id, user.role, req.body.plan);
+//   } catch (error) {
+//     res.status(500).json({ message: error });
+//   }
+//   return;
+// };
+
 export const subscribeUserController = async (req: Request, res: Response) => {
   try {
+    // Fetch the user by ID
     const user = await getUserById(req.params.id);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-    return await createSubscription(user.id, user.role, req.body.plan);
+
+    // Extract Stripe token data from the request body
+    const { email, name, metadata, amount, currency, type, card } = req.body.stripeToken;
+
+    // Call the function for handling Stripe one-time payment logic
+    const stripeResponse = await processStripeOneTimePayment({
+      email,
+      name,
+      metadata,
+      amount,
+      currency,
+      type,
+      card,
+    });
+
+    // Create a subscription record in your system (or just save the payment record)
+    await createSubscription(user.id, user.role, req.body.plan); // Adjust this if necessary to store only the payment details.
+
+    // Respond with success and payment details
+    return res.status(200).json({
+      message: 'Payment processed successfully',
+      payment: stripeResponse.paymentIntent,
+    });
   } catch (error) {
-    res.status(500).json({ message: error });
+    console.error(error);
+    return res.status(500).json({ message: 'Internal server error', error: error });
   }
-  return;
 };
+
+
 
 export const getClicksLeftController = async (req: Request, res: Response) => {
   try {
@@ -268,3 +307,7 @@ export const getFormattedClicksByIntervalAndUserController = async (
   }
   return;
 };
+// function processStripeSubscription(arg0: { email: any; name: any; metadata: any; amount: any; currency: any; interval: any; product: any; type: any; card: any; }, res: Response<any, Record<string, any>>) {
+//   throw new Error('Function not implemented.');
+// }
+

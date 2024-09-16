@@ -3,36 +3,93 @@ import { Schema } from 'mongoose';
 import log from '../utils/logger';
 import { SubscriptionPlan } from '../types/enums';
 import { subscriptionPlans } from '../config/subscriptionPlans';
-import { getBrandByUser } from './brandService';
+import { getBrandByUser, getBrandSubscriptionByUser } from './brandService';
+
+// export const createSubscription = async (
+//   user: Schema.Types.ObjectId,
+//   plan: SubscriptionPlan
+// ) => {
+//   try {
+//     log.info(`Subscribing brand`);
+//     const brand = await getBrandByUser(user);
+//     const planDetails = subscriptionPlans[plan];
+//     const subscription = new Subscription({
+//       brandId: brand.id,
+//       plan,
+//       clicksAllowed: planDetails.clicksLimit,
+//       purchaseDate: new Date(),
+//       createdBy: user,
+//     });
+
+//     subscription.save();
+//     log.info(`Brand ${brand.id} subscribed to plan ${plan}`);
+
+//     return subscription;
+//   } catch (error: any) {
+//     log.error(
+//       `Error subscribing user ${user} to plan ${plan}: ${error.message}`
+//     );
+//     throw error;
+//   }
+// };
 
 export const createSubscription = async (
   user: Schema.Types.ObjectId,
   plan: SubscriptionPlan
 ) => {
   try {
-    log.info(`Subscribing brand`);
+    log.info(`Subscribing brand ${user} to plan ${plan}`);
 
+    // Fetch existing subscription for the brand, if it exists
+    const existingSubscription = await getBrandSubscriptionByUser(user);
+
+    // Get brand details (e.g., brandId)
     const brand = await getBrandByUser(user);
+
+    // Get plan details (e.g., clicksLimit)
     const planDetails = subscriptionPlans[plan];
-    const subscription = new Subscription({
-      brandId: brand.id,
-      plan,
-      clicksAllowed: planDetails.clicksLimit,
-      purchaseDate: new Date(),
-      createdBy: user,
-    });
 
-    subscription.save();
-    log.info(`Brand ${brand.id} subscribed to plan ${plan}`);
+    let totalClicksAllowed = planDetails.clicksLimit; // New clicks limit
 
-    return subscription;
+    // If an existing subscription is found, add current clicksAllowed to the new clicksLimit
+    if (existingSubscription) {
+      log.info(`Existing subscription found for brand ${brand.id}, updating clicksAllowed.`);
+      totalClicksAllowed += existingSubscription.clicksAllowed; // Add current clicksAllowed
+      existingSubscription.clicksAllowed = totalClicksAllowed; // Update clicksAllowed
+      existingSubscription.plan = plan; // Update plan
+      existingSubscription.purchaseDate = new Date(); // Update the purchase date
+
+      // Save the updated subscription
+      await existingSubscription.save();
+
+      log.info(`Brand ${brand.id} updated to plan ${plan} with ${totalClicksAllowed} clicks allowed`);
+      return existingSubscription;
+    } else {
+      // If no existing subscription, create a new one
+      const newSubscription = new Subscription({
+        brandId: brand.id,
+        plan,
+        clicksAllowed: totalClicksAllowed,
+        purchaseDate: new Date(),
+        createdBy: user,
+      });
+
+      // Save the new subscription
+      await newSubscription.save();
+
+      log.info(`Brand ${brand.id} subscribed to plan ${plan} with ${totalClicksAllowed} clicks allowed`);
+      return newSubscription;
+    }
   } catch (error: any) {
-    log.error(
-      `Error subscribing user ${user} to plan ${plan}: ${error.message}`
-    );
+    // log.error(
+    //   `Error subscribing brand ${brand?.id || 'unknown'} to plan ${plan}: ${error.message}`
+    // );
     throw error;
   }
 };
+
+
+
 
 export const getClicksLeft = async (user: Schema.Types.ObjectId) => {
   try {
