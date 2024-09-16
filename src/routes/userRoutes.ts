@@ -17,6 +17,7 @@ import {
   getClicksGranularityByUserController,
   updatePasswordController,
   getFormattedClicksByIntervalAndUserController,
+  getProfileCompletionController,
 } from '../controllers/userController';
 import { authMiddleware } from '../middlewares/authMiddleware';
 import { validateRequest } from '../middlewares/validateRequest';
@@ -129,6 +130,13 @@ router.get(
   validateRequest,
   authMiddleware,
   getClicksGranularityByUserController
+);
+router.get(
+  '/:id/profile-completion',
+  param('id').isMongoId().withMessage('Invalid user ID'),
+  validateRequest,
+  authMiddleware,
+  getProfileCompletionController
 );
 router.use(
   '/:id/links',

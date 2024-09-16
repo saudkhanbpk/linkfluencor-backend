@@ -6,6 +6,7 @@ import {
   deleteUser,
   inviteToBrand,
   updatePassword,
+  getProfileCompletion,
 } from '../services/userService';
 import {
   createSubscription,
@@ -307,7 +308,18 @@ export const getFormattedClicksByIntervalAndUserController = async (
   }
   return;
 };
-// function processStripeSubscription(arg0: { email: any; name: any; metadata: any; amount: any; currency: any; interval: any; product: any; type: any; card: any; }, res: Response<any, Record<string, any>>) {
-//   throw new Error('Function not implemented.');
-// }
 
+export const getProfileCompletionController = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const userId = req.params.id;
+
+    const profileCompletion = await getProfileCompletion(userId);
+    res.json(profileCompletion);
+  } catch (error) {
+    res.status(500).json({ message: error });
+  }
+  return;
+};
