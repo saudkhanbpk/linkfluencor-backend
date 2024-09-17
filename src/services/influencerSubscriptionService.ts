@@ -5,33 +5,6 @@ import { SubscriptionPlan } from '../types/enums';
 import { subscriptionPlans } from '../config/subscriptionPlans';
 import InfluencerSubscriptionSchema from '../models/InfluencerSubscription';
 
-// export const createSubscription = async (
-//   user: Schema.Types.ObjectId,
-//   plan: SubscriptionPlan
-// ) => {
-//   try {
-//     log.info(`Subscribing user ${user} to plan ${plan}`);
-//     const planDetails = subscriptionPlans[plan];
-//     const subscription = new Subscription({
-//       userId: user,
-//       plan,
-//       clicksAllowed: planDetails.clicksLimit,
-//       purchaseDate: new Date(),
-//       createdBy: user,
-//     });
-
-//     subscription.save();
-//     log.info(`User ${user} subscribed to plan ${plan}`);
-
-//     return subscription;
-//   } catch (error: any) {
-//     log.error(
-//       `Error subscribing user ${user} to plan ${plan}: ${error.message}`
-//     );
-//     throw error;
-//   }
-// };
-
 export const createSubscription = async (
   user: Schema.Types.ObjectId,
   plan: SubscriptionPlan
@@ -44,7 +17,6 @@ export const createSubscription = async (
 
     // Get plan details (e.g., clicksLimit)
     const planDetails = subscriptionPlans[plan];
-
     let totalClicksAllowed = planDetails.clicksLimit; // New clicks limit
 
     // If an existing subscription is found, add current clicksAllowed to the new clicksLimit

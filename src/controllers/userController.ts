@@ -74,19 +74,6 @@ export const deleteUserController = async (req: Request, res: Response) => {
   return;
 };
 
-// export const subscribeUserController = async (req: Request, res: Response) => {
-//   try {
-//     const user = await getUserById(req.params.id);
-//     if (!user) {
-//       return res.status(404).json({ message: 'User not found' });
-//     }
-//     return await createSubscription(user.id, user.role, req.body.plan);
-//   } catch (error) {
-//     res.status(500).json({ message: error });
-//   }
-//   return;
-// };
-
 export const subscribeUserController = async (req: Request, res: Response) => {
   try {
     // Fetch the user by ID
@@ -107,10 +94,10 @@ export const subscribeUserController = async (req: Request, res: Response) => {
       currency,
       type,
       card,
-    });
+    });  
 
     // Create a subscription record in your system (or just save the payment record)
-    await createSubscription(user.id, user.role, req.body.plan); // Adjust this if necessary to store only the payment details.
+    await createSubscription(user.id, user.role, req.body.plan);
 
     // Respond with success and payment details
     return res.status(200).json({
