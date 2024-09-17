@@ -41,4 +41,5 @@ export const config = {
   ),
   allowedOrigins: process.env.ALLOWED_ORIGINS,
   logLevel: process.env.LOG_LEVEL,
+  domain: process.env.DOMAIN,
 };

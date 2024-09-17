@@ -17,6 +17,7 @@ mongoose.set('strictQuery', true);
 
 // Security middleware
 app.use(helmet());
+
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -32,6 +33,7 @@ app.use(
     credentials: true,
   })
 );
+
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,

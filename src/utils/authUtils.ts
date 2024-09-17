@@ -57,7 +57,7 @@ export const sendTokens = (
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'None' : 'Lax',
-    domain: isProduction ? '.linfluencer.com' : 'localhost',
+    domain: isProduction ? config.domain : 'localhost',
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
@@ -65,7 +65,7 @@ export const sendTokens = (
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? 'None' : 'Lax',
-    domain: isProduction ? '.linfluencer.com' : 'localhost',
+    domain: isProduction ? config.domain : 'localhost',
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 };
