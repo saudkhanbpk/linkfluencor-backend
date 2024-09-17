@@ -20,7 +20,7 @@ import { TimeInterval, TimeGranularity } from '../types/types';
 import { IClick } from 'interfaces/Click';
 import NotFoundError from '../errors/NotFoundError';
 import ConflictError from '../errors/ConflictError';
-import { redirectToApp } from 'utils/redirectionUtils';
+import { redirectToApp } from '../utils/redirectionUtils';
 
 export const handleClick = async (req: Request) => {
   try {

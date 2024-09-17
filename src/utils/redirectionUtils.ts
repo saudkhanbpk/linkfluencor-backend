@@ -1,4 +1,4 @@
-import { URL_PATTERNS } from 'types/patterns';
+import { URL_PATTERNS } from '../types/patterns';
 
 export const redirectToApp = (originalUrl: string, osName: string): string => {
   const appKey = Object.keys(URL_PATTERNS).find(key =>
