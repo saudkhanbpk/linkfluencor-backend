@@ -71,14 +71,6 @@ export const createShortLink = async (
   suffix?: string | null,
   tagsArray?: string[] | null
 ): Promise<ILink> => {
-  console.log({
-    userId,
-    originalUrl,
-    prefixUrl,
-    suffix,
-    tagsArray,
-  });
-
   try {
     log.info(`Creating short link for user with id: ${userId}`);
     const user = await User.findById(userId);
@@ -310,8 +302,7 @@ export const bulkCreateShortLinks = async (
         link.linkTag5 ?? '',
       ])
     );
-    console.log({shortLinkPromises});
-    
+
     await Promise.all(shortLinkPromises).then(() => {
       log.info(
         `File successfully uploaded for user ${userId} and filename: ${fileName}`
