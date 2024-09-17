@@ -111,9 +111,8 @@ export const bulkUpload = async (
       return res.status(400).send('No file uploaded.');
     }
     const userId = req.params.id;
-
     await bulkCreateShortLinks(userId, req.file.buffer, req.file.originalname);
-
+    
     res.status(200).json({
       message: 'Links created successfully',
     });
