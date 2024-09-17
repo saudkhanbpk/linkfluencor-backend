@@ -3,6 +3,7 @@ import moment, { Moment } from 'moment-timezone';
 import geoip from 'geoip-lite';
 import log from '../utils/logger';
 import requestIp from 'request-ip';
+import UAParser from 'ua-parser-js';
 import {
   getAllLinksForUser,
   getOriginalUrl,
@@ -19,6 +20,7 @@ import { TimeInterval, TimeGranularity } from '../types/types';
 import { IClick } from 'interfaces/Click';
 import NotFoundError from '../errors/NotFoundError';
 import ConflictError from '../errors/ConflictError';
+import { redirectToApp } from 'utils/redirectionUtils';
 
 export const handleClick = async (req: Request) => {
   try {
@@ -43,12 +45,18 @@ export const handleClick = async (req: Request) => {
       log.warn('No clicks left');
       throw new ConflictError('No clicks left');
     }
+
     await incrementClicks(link.createdBy, user.role);
     await incrementLinkClicks(link._id);
-
     await saveClickInfo(req, shortUrl, link);
 
-    return link.originalUrl;
+    const parser = new UAParser(req.headers['user-agent']);
+    const os = parser.getOS();
+    const osName = os.name || '';
+
+    const redirectUrl = redirectToApp(link.originalUrl, osName);
+
+    return redirectUrl;
   } catch (error: any) {
     log.error(`Error handling click: ${error.message}`);
     throw error;

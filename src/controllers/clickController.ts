@@ -7,9 +7,9 @@ export const handleRedirect = async (
   next: NextFunction
 ) => {
   try {
-    const originalUrl = await handleClick(req);
+    const redirectUrl = await handleClick(req);
 
-    res.redirect(originalUrl);
+    res.redirect(redirectUrl);
   } catch (err) {
     next(err);
   }
