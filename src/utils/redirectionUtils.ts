@@ -1,5 +1,9 @@
 import { URL_PATTERNS } from '../types/patterns';
 
+const getIntentUrl = (scheme: string, originalUrl: string): string => {
+  return `intent://${originalUrl.replace(/^https?:\/\//, '')}#Intent;scheme=${scheme};package=com.example;end`;
+};
+
 export const redirectToApp = (originalUrl: string, osName: string): string => {
   const appKey = Object.keys(URL_PATTERNS).find(key =>
     URL_PATTERNS[key as keyof typeof URL_PATTERNS].test(originalUrl)
@@ -73,7 +77,7 @@ export const redirectToApp = (originalUrl: string, osName: string): string => {
     if (osName === 'iOS' && scheme.ios) {
       return `${scheme.ios}//`;
     } else if (osName === 'Android' && scheme.android) {
-      return `${scheme.android}//`;
+      return getIntentUrl(scheme.android, originalUrl);
     }
   }
 

@@ -12,6 +12,8 @@ import routes from './routes/';
 
 const app: Application = express();
 
+app.set('trust proxy', true);
+
 // Mongoose configuration
 mongoose.set('strictQuery', true);
 
