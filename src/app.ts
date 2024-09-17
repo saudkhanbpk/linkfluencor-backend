@@ -41,7 +41,7 @@ app.use(cookieParser());
 
 connectDB();
 
-app.use(routes);
+app.use('/api', routes);
 app.use(errorHandler);
 
 export default app;
