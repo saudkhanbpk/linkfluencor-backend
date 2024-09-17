@@ -1,11 +1,12 @@
 {
   "name": "linkfluencer-api",
   "version": "1.0.0",
-  "description": "Linkfluencer API built with Node.js, Express.js, TypeScript, and MongoDB.",
+  "description": "Linkfluencer API",
   "main": "dist/server.js",
   "scripts": {
     "start": "NODE_ENV=production node dist/server.js",
     "dev": "cross-env NODE_ENV=development nodemon src/server.ts",
+    "build": "tsc",
     "lint": "eslint 'src/**/*.ts'",
     "lint:fix": "eslint 'src/**/*.ts' --fix",
     "format": "prettier --write 'src/**/*.ts'",
