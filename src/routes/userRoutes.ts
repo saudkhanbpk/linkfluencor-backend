@@ -142,7 +142,7 @@ router.use(
   '/:id/links',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   linkRoutes
 );
 

@@ -11,6 +11,7 @@ export const extractLinksFromFile = (
   let data: string[][];
 
   const fileExtension = fileName.split('.').pop()?.toLowerCase();
+  
   if (!fileExtension) {
     throw new BadRequestError('Unable to determine file extension');
   }
@@ -27,16 +28,12 @@ export const extractLinksFromFile = (
     throw new ValidationError('Unsupported file type');
   }
 
-  const rows = data.slice(1);
+  const rows = data.slice(1); // Skip the header row
 
-  const links = rows.map(row => {
-    const originalUrl = row[0];
-    if (!originalUrl) {
-      throw new ValidationError('originalUrl is required');
-    }
-
-    return {
-      originalUrl,
+  const links: BulkLinkData[] = rows
+    .filter(row => row[0]) // Filter out rows where originalUrl is missing
+    .map(row => ({
+      originalUrl: row[0],
       prefix: row[1] || null,
       suffix: row[2] || null,
       linkTag1: row[3] || null,
@@ -44,8 +41,11 @@ export const extractLinksFromFile = (
       linkTag3: row[5] || null,
       linkTag4: row[6] || null,
       linkTag5: row[7] || null,
-    };
-  });
+    }));
+
+  if (links.length === 0) {
+    throw new ValidationError('No valid links found in the file');
+  }
 
   return links;
 };
