@@ -12,7 +12,7 @@ import routes from './routes/';
 
 const app: Application = express();
 
-app.set('trust proxy', true);
+app.set('trust proxy', 1);
 
 // Mongoose configuration
 mongoose.set('strictQuery', true);
@@ -41,6 +41,7 @@ app.use(
     windowMs: 15 * 60 * 1000,
     max: 100000,
     message: 'Too many requests from this IP, please try again later.',
+    skip: () => process.env.NODE_ENV === 'development'
   })
 );
 
@@ -57,7 +58,9 @@ app.use((req, _res, next) => {
 });
 
 connectDB();
-
+app.get('/test',(req,res)=>{
+res.json('backend is runing')
+})
 app.use('/api', routes);
 app.use(errorHandler);
 
