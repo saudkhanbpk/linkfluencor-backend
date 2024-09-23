@@ -57,7 +57,6 @@ app.use((req, _res, next) => {
 });
 
 connectDB();
-
 app.use('/api', routes);
 app.use(errorHandler);
 

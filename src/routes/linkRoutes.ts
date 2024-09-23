@@ -39,6 +39,7 @@ router.put(
   validateRequest,
   updateShortLinkController
 );
+
 router.get(
   '/:linkId/clicks',
   param('linkId').isMongoId().withMessage('Invalid link ID'),
