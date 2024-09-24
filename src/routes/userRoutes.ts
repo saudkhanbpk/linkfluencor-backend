@@ -30,28 +30,28 @@ router.get(
   '/:id',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   getUser
 );
 router.put(
   '/:id',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   updateUserController
 );
 router.put(
   '/:id/password',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   updatePasswordController
 );
 router.delete(
   '/:id',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   deleteUserController
 );
 router.post(
@@ -65,77 +65,77 @@ router.get(
   '/:id/clicks-left',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   getClicksLeftController
 );
 router.get(
   '/:id/clicks-by-interval',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   getClicksByIntervalAndUserController
 );
 router.get(
   '/:id/clicks-by-user-interval',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   getFormattedClicksByIntervalAndUserController
 );
 router.get(
   '/:id/total-clicks',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   getTotalClicksByUserController
 );
 router.get(
   '/:id/best-performing-platform',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   getBestPerformingPlatformByUserController
 );
 router.get(
   '/:id/top-5-best-performing-platforms',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   getTop5BestPerformingPlatformsByUserController
 );
 router.get(
   '/:id/top-countries',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   getTopCountryByUserController
 );
 router.get(
   '/:id/top-city',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   getBestCityByUserController
 );
 router.get(
   '/:id/top-average-time-to-engage',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   getBestAverageTimeToEngageByUserController
 );
 router.get(
   '/:id/clicks-granularity',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   getClicksGranularityByUserController
 );
 router.get(
   '/:id/profile-completion',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   getProfileCompletionController
 );
 router.use(
