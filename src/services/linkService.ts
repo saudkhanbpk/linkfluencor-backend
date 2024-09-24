@@ -47,7 +47,7 @@ export const getAllLinksForUser = async (
     const req =
       user.role === UserRole.BrandUser && user.brand
         ? { brand: user.brand }
-        : { user: user._id };
+        : { createdBy: user._id };
 
     const links = await Link.find(req)
       .sort(sort)
