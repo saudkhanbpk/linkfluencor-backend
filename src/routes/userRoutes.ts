@@ -58,7 +58,7 @@ router.post(
   '/:id/subscribe',
   param('id').isMongoId().withMessage('Invalid user ID'),
   validateRequest,
-  authMiddleware,
+  // authMiddleware,
   subscribeUserController
 );
 router.get(
@@ -145,5 +145,6 @@ router.use(
   // authMiddleware,
   linkRoutes
 );
+
 
 export default router;
