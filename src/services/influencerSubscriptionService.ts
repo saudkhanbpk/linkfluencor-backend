@@ -21,16 +21,20 @@ export const createSubscription = async (
 
     // If an existing subscription is found, add current clicksAllowed to the new clicksLimit
     if (existingSubscription) {
-      log.info(`Existing subscription found for user ${user}, updating clicksAllowed.`);
+      log.info(
+        `Existing subscription found for user ${user}, updating clicksAllowed.`
+      );
       totalClicksAllowed += existingSubscription.clicksAllowed; // Add current clicksAllowed
-      existingSubscription.clicksAllowed = totalClicksAllowed;  // Update clicksAllowed
+      existingSubscription.clicksAllowed = totalClicksAllowed; // Update clicksAllowed
       existingSubscription.plan = plan; // Update plan
       existingSubscription.purchaseDate = new Date(); // Update the purchase date
 
       // Save the updated subscription
       await existingSubscription.save();
 
-      log.info(`User ${user} updated to plan ${plan} with ${totalClicksAllowed} clicks allowed`);
+      log.info(
+        `User ${user} updated to plan ${plan} with ${totalClicksAllowed} clicks allowed`
+      );
       return existingSubscription;
     } else {
       // If no existing subscription, create a new one
@@ -45,7 +49,9 @@ export const createSubscription = async (
       // Save the new subscription
       await newSubscription.save();
 
-      log.info(`User ${user} subscribed to plan ${plan} with ${totalClicksAllowed} clicks allowed`);
+      log.info(
+        `User ${user} subscribed to plan ${plan} with ${totalClicksAllowed} clicks allowed`
+      );
       return newSubscription;
     }
   } catch (error: any) {
@@ -55,7 +61,6 @@ export const createSubscription = async (
     throw error;
   }
 };
-
 
 export const getClicksLeft = async (user: Schema.Types.ObjectId) => {
   try {
@@ -98,24 +103,28 @@ export const incrementClicks = async (user: Schema.Types.ObjectId) => {
   }
 };
 
-
-export const getInfluencerSubscriptionByUser = async (userId: Schema.Types.ObjectId) => {
+export const getInfluencerSubscriptionByUser = async (
+  userId: Schema.Types.ObjectId
+) => {
   try {
     log.info(`Fetching influencer subscription by user ID: ${userId}`);
-    
+
     // Fetch the subscription using the userId field
-    const influencerSubscription = await InfluencerSubscriptionSchema.findOne({ userId: userId });
-    
+    const influencerSubscription = await InfluencerSubscriptionSchema.findOne({
+      userId: userId,
+    });
+
     if (!influencerSubscription) {
       log.warn(`Influencer subscription not found for user ID: ${userId}`);
       return null; // Return null instead of throwing an error if no subscription is found
     }
-    
+
     log.info(`Influencer subscription found for user ID: ${userId}`);
     return influencerSubscription;
   } catch (error: any) {
-    log.error(`Error fetching influencer subscription by user ID: ${error.message}`);
+    log.error(
+      `Error fetching influencer subscription by user ID: ${error.message}`
+    );
     throw error;
   }
 };
-

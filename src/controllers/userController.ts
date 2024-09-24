@@ -83,7 +83,8 @@ export const subscribeUserController = async (req: Request, res: Response) => {
     }
 
     // Extract Stripe token data from the request body
-    const { email, name, metadata, amount, currency, type, card } = req.body.stripeToken;
+    const { email, name, metadata, amount, currency, type, card } =
+      req.body.stripeToken;
 
     // Call the function for handling Stripe one-time payment logic
     const stripeResponse = await processStripeOneTimePayment({
@@ -94,7 +95,7 @@ export const subscribeUserController = async (req: Request, res: Response) => {
       currency,
       type,
       card,
-    });  
+    });
 
     // Create a subscription record in your system (or just save the payment record)
     await createSubscription(user.id, user.role, req.body.plan);
@@ -106,11 +107,11 @@ export const subscribeUserController = async (req: Request, res: Response) => {
     });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Internal server error', error: error });
+    return res
+      .status(500)
+      .json({ message: 'Internal server error', error: error });
   }
 };
-
-
 
 export const getClicksLeftController = async (req: Request, res: Response) => {
   try {

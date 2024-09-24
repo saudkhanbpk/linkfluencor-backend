@@ -85,17 +85,22 @@ export const getBrandByUser = async (userId: Schema.Types.ObjectId) => {
   }
 };
 
-
-export const getBrandSubscriptionByUser = async (userId: Schema.Types.ObjectId) => {
+export const getBrandSubscriptionByUser = async (
+  userId: Schema.Types.ObjectId
+) => {
   try {
     log.info(`Fetching brand subscription by user ID: ${userId}`);
-        const brandSubscription = await BrandSubscriptionSchema.findOne({ createdBy: userId }).populate('createdBy').populate('brandId');
-    
+    const brandSubscription = await BrandSubscriptionSchema.findOne({
+      createdBy: userId,
+    })
+      .populate('createdBy')
+      .populate('brandId');
+
     if (!brandSubscription) {
       log.warn(`Brand subscription not found for user ID: ${userId}`);
       throw new NotFoundError('Brand subscription not found');
     }
-    
+
     log.info(`Brand subscription found for user ID: ${userId}`);
     return brandSubscription;
   } catch (error: any) {
@@ -103,5 +108,3 @@ export const getBrandSubscriptionByUser = async (userId: Schema.Types.ObjectId) 
     throw error;
   }
 };
-
-

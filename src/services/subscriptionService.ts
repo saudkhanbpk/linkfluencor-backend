@@ -4,11 +4,14 @@ import { SubscriptionPlan, UserRole } from '../types/enums';
 import * as InfluencerSubscription from './influencerSubscriptionService';
 import * as BrandSubscription from './brandSubscriptionService';
 import NotFoundError from '../errors/NotFoundError';
-import Stripe from 'stripe'; 
+import Stripe from 'stripe';
 
-var stripe = new Stripe('sk_test_51LSyHvLXPozpY2goNcCyuV3Nv9jAiuuN1IYIFkMbu7zLddmiYlhIXPO0viSuoEV1ftEcNoZSWh3AU8oBGQld9nit002R41cjAP');
-const stripef = require('stripe')('pk_test_51LSyHvLXPozpY2goU5k689Qi5EYonsd4d9aUbAW75pJtbF95TXLYjltVyy4oZg4T969JFZl5wOMAvT3HwfwR90Zw00DkhiG5aM'); //frontend
-
+const stripe = new Stripe(
+  'sk_test_51LSyHvLXPozpY2goNcCyuV3Nv9jAiuuN1IYIFkMbu7zLddmiYlhIXPO0viSuoEV1ftEcNoZSWh3AU8oBGQld9nit002R41cjAP'
+);
+const stripef = require('stripe')(
+  'pk_test_51LSyHvLXPozpY2goU5k689Qi5EYonsd4d9aUbAW75pJtbF95TXLYjltVyy4oZg4T969JFZl5wOMAvT3HwfwR90Zw00DkhiG5aM'
+); //frontend
 
 const SubscriptionService = (role: UserRole) => {
   if (role === UserRole.User) {
@@ -39,16 +42,16 @@ export const processStripeOneTimePayment = async (paymentData: any) => {
       });
     }
 
-    // Step 3: Create a payment method 
+    // Step 3: Create a payment method
     const paymentMethod = await stripef.paymentMethods.create({
       type: type,
       card: {
-          number: card.number,
-          exp_month: parseInt(card.exp_month),
-          exp_year: parseInt(card.exp_year),
-          cvc: card.cvc,
+        number: card.number,
+        exp_month: parseInt(card.exp_month),
+        exp_year: parseInt(card.exp_year),
+        cvc: card.cvc,
       },
-  })
+    });
 
     // Step 4: Attach the payment method to the customer
     await stripe.paymentMethods.attach(paymentMethod.id, {
@@ -78,7 +81,7 @@ export const processStripeOneTimePayment = async (paymentData: any) => {
       paymentIntent,
     };
   } catch (error: any) {
-    console.error(error);
+    log.error(`Error processing one-time payment: ${error.message}`);
     throw new Error(error.message);
   }
 };
@@ -90,7 +93,7 @@ export const createSubscription = async (
 ) => {
   try {
     log.info(`Subscribing user ${user} to plan ${plan}`);
-    
+
     return SubscriptionService(role).createSubscription(user, plan);
   } catch (error: any) {
     log.error(

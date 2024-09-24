@@ -18,14 +18,16 @@ export const createSubscription = async (
     // Get brand details (e.g., brandId)
     const brand = await getBrandByUser(user);
 
-    // Get plan details (e.g., clicksLimit)    
+    // Get plan details (e.g., clicksLimit)
     const planDetails = subscriptionPlans[plan];
-    
+
     let totalClicksAllowed = planDetails.clicksLimit; // New clicks limit
 
     // If an existing subscription is found, add current clicksAllowed to the new clicksLimit
     if (existingSubscription) {
-      log.info(`Existing subscription found for brand ${brand.id}, updating clicksAllowed.`);
+      log.info(
+        `Existing subscription found for brand ${brand.id}, updating clicksAllowed.`
+      );
       totalClicksAllowed += existingSubscription.clicksAllowed; // Add current clicksAllowed
       existingSubscription.clicksAllowed = totalClicksAllowed; // Update clicksAllowed
       existingSubscription.plan = plan; // Update plan
@@ -34,7 +36,9 @@ export const createSubscription = async (
       // Save the updated subscription
       await existingSubscription.save();
 
-      log.info(`Brand ${brand.id} updated to plan ${plan} with ${totalClicksAllowed} clicks allowed`);
+      log.info(
+        `Brand ${brand.id} updated to plan ${plan} with ${totalClicksAllowed} clicks allowed`
+      );
       return existingSubscription;
     } else {
       // If no existing subscription, create a new one
@@ -49,19 +53,16 @@ export const createSubscription = async (
       // Save the new subscription
       await newSubscription.save();
 
-      log.info(`Brand ${brand.id} subscribed to plan ${plan} with ${totalClicksAllowed} clicks allowed`);
+      log.info(
+        `Brand ${brand.id} subscribed to plan ${plan} with ${totalClicksAllowed} clicks allowed`
+      );
       return newSubscription;
     }
   } catch (error: any) {
-    // log.error(
-    //   `Error subscribing brand ${brand?.id || 'unknown'} to plan ${plan}: ${error.message}`
-    // );
+    log.error(`Error subscribing brand  to plan ${plan}: ${error.message}`);
     throw error;
   }
 };
-
-
-
 
 export const getClicksLeft = async (user: Schema.Types.ObjectId) => {
   try {
