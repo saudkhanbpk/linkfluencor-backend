@@ -54,10 +54,13 @@ app.use(cookieParser());
 app.use((req, _res, next) => {
   console.log(`Incoming Request: ${req.method} ${req.url}`);
   next();
-});
+}); 
+
+app.get('/test', (_req, res)=>{
+  res.status(200).json({message:"this is test api"})
+})
 
 connectDB();
-
 app.use('/api', routes);
 app.use(errorHandler);
 
