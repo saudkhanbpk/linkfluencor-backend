@@ -56,14 +56,14 @@ export const sendTokens = (
   res.cookie('refreshToken', refreshToken, {
     secure: isProduction,
     sameSite: isProduction ? 'None' : 'Lax',
-    domain: config.cookieDomain,
+    domain: '*',
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
   res.cookie('accessToken', accessToken, {
     secure: isProduction,
     sameSite: isProduction ? 'None' : 'Lax',
-    domain: config.cookieDomain,
+    domain: '*',
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 };
