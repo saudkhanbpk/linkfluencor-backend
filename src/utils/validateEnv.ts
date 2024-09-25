@@ -1,4 +1,4 @@
-import { cleanEnv, str, port } from 'envalid';
+import { cleanEnv, str, port, num } from 'envalid';
 
 const validateEnv = () => {
   cleanEnv(process.env, {
@@ -15,14 +15,14 @@ const validateEnv = () => {
     FACEBOOK_APP_SECRET: str(),
     EMAIL_USER: str(),
     EMAIL_PASS: str(),
-    PLAN_FREE_PRICE: str(),
-    PLAN_FREE_CLICKS_LIMIT: str(),
-    PLAN_STARTER_PRICE: str(),
-    PLAN_STARTER_CLICKS_LIMIT: str(),
-    PLAN_GROW_PRICE: str(),
-    PLAN_GROW_CLICKS_LIMIT: str(),
-    PLAN_SCALE_PRICE: str(),
-    PLAN_SCALE_CLICKS_LIMIT: str(),
+    PLAN_FREE_PRICE: num(),
+    PLAN_FREE_CLICKS_LIMIT: num(),
+    PLAN_STARTER_PRICE: num(),
+    PLAN_STARTER_CLICKS_LIMIT: num(),
+    PLAN_GROW_PRICE: num(),
+    PLAN_GROW_CLICKS_LIMIT: num(),
+    PLAN_SCALE_PRICE: num(),
+    PLAN_SCALE_CLICKS_LIMIT: num(),
     ALLOWED_ORIGINS: str(),
     LOG_LEVEL: str(),
     COOKIE_DOMAIN: str(),

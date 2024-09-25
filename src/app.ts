@@ -9,6 +9,7 @@ import { connectDB } from './config/db';
 import mongoose from 'mongoose';
 import errorHandler from './middlewares/errorHandler';
 import routes from './routes/';
+import { config } from './config/env';
 
 const app: Application = express();
 
@@ -22,12 +23,7 @@ app.use(helmet());
 app.use(
   cors({
     origin: (origin, callback) => {
-      const allowedOrigins = [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'https://linkfluencer-dashboard-git-dev-0-yass-projects-b2b966dd.vercel.app',
-        'https://linkfluencor-backend.onrender.com',
-      ];
+      const allowedOrigins = config.allowedOrigins || [];
 
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
@@ -41,11 +37,11 @@ app.use(
   })
 );
 
-app.use((_req, res, next) => {
-  res.header(
-    'Access-Control-Allow-Origin',
-    'https://linkfluencer-dashboard-git-dev-0-yass-projects-b2b966dd.vercel.app'
-  );
+app.use((req, res, next) => {
+  const origin = req.headers.origin as string;
+  if (config.allowedOrigins && config.allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
   res.header(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept, Authorization'
