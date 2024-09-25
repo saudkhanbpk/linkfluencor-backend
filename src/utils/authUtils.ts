@@ -51,22 +51,9 @@ export const sendTokens = (
   accessToken: string,
   refreshToken: string
 ) => {
-  const isProduction = process.env.NODE_ENV === 'production';
-
-  res.cookie('refreshToken', refreshToken, {
-    httpOnly: false,
-    secure: false,
-    sameSite: isProduction ? 'None' : 'Lax',
-    domain: config.cookieDomain,
-    maxAge: 30 * 24 * 60 * 60 * 1000,
-  });
-
-  res.cookie('accessToken', accessToken, {
-    httpOnly: false,
-    secure: false,
-    sameSite: isProduction ? 'None' : 'Lax',
-    domain: config.cookieDomain,
-    maxAge: 30 * 24 * 60 * 60 * 1000,
+  res.json({
+    accessToken,
+    refreshToken,
   });
 };
 

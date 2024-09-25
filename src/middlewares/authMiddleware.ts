@@ -10,11 +10,13 @@ export const authMiddleware = async (
   _res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies.accessToken;
+  const authHeader = req.headers.authorization;
 
-  if (!token) {
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return next(new AuthenticationError('No token, authorization denied'));
   }
+
+  const token = authHeader.split(' ')[1];
 
   try {
     const decoded = verifyAccessToken(token) as DecodedToken;
