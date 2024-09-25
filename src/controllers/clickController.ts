@@ -46,7 +46,6 @@ export const handleRedirect = async (
         return res.redirect(appUri);
       }
     }
-
     // Fallback to website for desktop users or if no app URI is available
     return res.redirect(redirectUrl);
 
