@@ -6,7 +6,7 @@ export interface IClick extends Document {
   ipAddress: string;
   userAgent: string;
   platform: string;
-  country?: string;
-  city?: string;
+  country: string | null;
+  city: string | null;
   referrer: string | null;
 }

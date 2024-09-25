@@ -8,8 +8,8 @@ const clickSchema = new Schema<IClick>(
     ipAddress: { type: String, required: true },
     userAgent: { type: String, required: true },
     platform: { type: String, required: true },
-    country: { type: String, required: false },
-    city: { type: String, required: false },
+    country: { type: String, default: 'Unknown' },
+    city: { type: String, default: 'Unknown' },
     referrer: { type: String, default: null },
   },
   {
