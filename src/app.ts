@@ -21,12 +21,26 @@ mongoose.set('strictQuery', true);
 app.use(helmet());
 app.use(
   cors({
-    origin: '*',
+    origin: (_origin, callback) => {
+      callback(null, true);
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     credentials: true,
   })
 );
+app.options('*', cors());
+
+app.use((_req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  );
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
 
 app.use(
   rateLimit({
