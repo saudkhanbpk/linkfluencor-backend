@@ -21,18 +21,28 @@ mongoose.set('strictQuery', true);
 app.use(helmet());
 app.use(
   cors({
-    origin: (_origin, callback) => {
-      callback(null, true);
+    origin: (origin, callback) => {
+      const allowedOrigins = [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'https://linkfluencer-dashboard-git-dev-0-yass-projects-b2b966dd.vercel.app',
+        'https://linkfluencor-backend.onrender.com',
+      ];
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
     credentials: true,
   })
 );
-app.options('*', cors());
 
 app.use((_req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Origin', 'http://localhost:3001');
   res.header(
     'Access-Control-Allow-Headers',
     'Origin, X-Requested-With, Content-Type, Accept, Authorization'
@@ -41,6 +51,8 @@ app.use((_req, res, next) => {
   res.header('Access-Control-Allow-Credentials', 'true');
   next();
 });
+
+app.options('*', cors());
 
 app.use(
   rateLimit({

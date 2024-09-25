@@ -57,7 +57,7 @@ export const sendTokens = (
     httpOnly: false,
     secure: false,
     sameSite: isProduction ? 'None' : 'Lax',
-    domain: '*',
+    domain: config.cookieDomain,
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 
@@ -65,7 +65,7 @@ export const sendTokens = (
     httpOnly: false,
     secure: false,
     sameSite: isProduction ? 'None' : 'Lax',
-    domain: '*',
+    domain: config.cookieDomain,
     maxAge: 30 * 24 * 60 * 60 * 1000,
   });
 };
