@@ -27,7 +27,7 @@ export const handleClick = async (req: Request) => {
     log.info('Handling click');
     const shortUrl = req.params.link;
     const link = await getOriginalUrl(shortUrl);
-
+    console.log({shortUrl, link});
     if (!link) {
       log.error('Invalid short url');
       throw new NotFoundError('Invalid short url');
