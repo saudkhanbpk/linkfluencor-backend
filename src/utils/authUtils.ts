@@ -51,7 +51,7 @@ export const sendTokens = (
   accessToken: string,
   refreshToken: string
 ) => {
-  res.json({
+  return res.status(200).json({
     accessToken,
     refreshToken,
   });
