@@ -11,7 +11,7 @@ export const extractLinksFromFile = (
   let data: string[][];
 
   const fileExtension = fileName.split('.').pop()?.toLowerCase();
-  
+
   if (!fileExtension) {
     throw new BadRequestError('Unable to determine file extension');
   }

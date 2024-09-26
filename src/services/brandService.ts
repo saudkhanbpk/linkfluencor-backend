@@ -4,6 +4,7 @@ import { BrandMemberRole } from '../types/enums';
 import log from '../utils/logger';
 import ValidationError from '../errors/ValidationError';
 import NotFoundError from '../errors/NotFoundError';
+import BrandSubscriptionSchema from '../models/BrandSubscription';
 
 export const createBrand = (userId: string) => {
   try {
@@ -80,6 +81,30 @@ export const getBrandByUser = async (userId: Schema.Types.ObjectId) => {
     return brand;
   } catch (error: any) {
     log.error(`Error fetching brand by user ID: ${error.message}`);
+    throw error;
+  }
+};
+
+export const getBrandSubscriptionByUser = async (
+  userId: Schema.Types.ObjectId
+) => {
+  try {
+    log.info(`Fetching brand subscription by user ID: ${userId}`);
+    const brandSubscription = await BrandSubscriptionSchema.findOne({
+      createdBy: userId,
+    })
+      .populate('createdBy')
+      .populate('brandId');
+
+    if (!brandSubscription) {
+      log.warn(`Brand subscription not found for user ID: ${userId}`);
+      throw new NotFoundError('Brand subscription not found');
+    }
+
+    log.info(`Brand subscription found for user ID: ${userId}`);
+    return brandSubscription;
+  } catch (error: any) {
+    log.error(`Error fetching brand subscription by user ID: ${error.message}`);
     throw error;
   }
 };

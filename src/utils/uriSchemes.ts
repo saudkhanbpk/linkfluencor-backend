@@ -6,7 +6,8 @@ export const uriSchemes: { [key: string]: { ios: string; android: string } } = {
   },
   instagram: {
     ios: 'instagram://',
-    android: 'intent://instagram.com/#Intent;package=com.instagram.android;end',
+   android:' intent://instagram.com/_u/your_username/#Intent;package=com.instagram.android;scheme=https;end'
+
   },
   spotify: { ios: 'spotify:', android: 'spotify:' },
   alibaba: { ios: 'alibaba:', android: 'alibaba:' },

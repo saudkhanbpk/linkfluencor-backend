@@ -9,6 +9,7 @@ import { connectDB } from './config/db';
 import mongoose from 'mongoose';
 import errorHandler from './middlewares/errorHandler';
 import routes from './routes/';
+import { config } from './config/env';
 
 const app: Application = express();
 
@@ -19,11 +20,11 @@ mongoose.set('strictQuery', true);
 
 // Security middleware
 app.use(helmet());
-
 app.use(
   cors({
     origin: (origin, callback) => {
-      const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || '*';
+      const allowedOrigins = config.allowedOrigins || [];
+
       if (!origin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -35,6 +36,22 @@ app.use(
     credentials: true,
   })
 );
+
+app.use((req, res, next) => {
+  const origin = req.headers.origin as string;
+  if (config.allowedOrigins && config.allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+  );
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  next();
+});
+
+app.options('*', cors());
 
 app.use(
   rateLimit({
@@ -55,6 +72,10 @@ app.use(cookieParser());
 app.use((req, _res, next) => {
   console.log(`Incoming Request: ${req.method} ${req.url}`);
   next();
+});
+
+app.get('/test', (_req, res) => {
+  res.status(200).json({ message: 'this is test api' });
 });
 
 connectDB();
