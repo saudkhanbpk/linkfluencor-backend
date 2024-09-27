@@ -8,7 +8,7 @@ export const handleRedirect = async (
 ) => {
   try {
     const redirectUrl = await handleClick(req);
-    res.redirect(redirectUrl);
+    res.status(200).json({redirectUrl});
   } catch (err) {
     next(err);
   }

@@ -45,7 +45,6 @@ export const handleClick = async (req: Request) => {
       log.warn('No clicks left');
       throw new ConflictError('No clicks left');
     }
-
     await incrementClicks(link.createdBy, user.role);
     await incrementLinkClicks(link._id);
     await saveClickInfo(req, shortUrl, link);
