@@ -37,6 +37,7 @@ app.use(
   })
 );
 
+
 app.use((req, res, next) => {
   const origin = req.headers.origin as string;
   if (config.allowedOrigins && config.allowedOrigins.includes(origin)) {
