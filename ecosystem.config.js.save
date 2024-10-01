@@ -14,7 +14,7 @@ module.exports = {
         MONGO_URI: 'mongodb+srv://linkfluencer:linkfluencer@cluster0.jjd6w.mongodb.net/linkfluencer',
         JWT_SECRET: 'dummysecret',
         JWT_REFRESH_SECRET: 'dummysecret',
-        ALLOWED_ORIGINS: 'http://localhost:3000,http://localhost:3001,http://app.dev.linkfluencer.io/',
+        ALLOWED_ORIGINS: 'http://localhost:3000,http://localhost:3001,https://link',
         LOG_LEVEL: 'debug',
         SESSION_SECRET: 'd8e824dcf1cb4aae598f459eaba5d8aade69d970d427d9ecdcfe0ba886aa5208',
         GOOGLE_CLIENT_ID: '483494499664-gtt5ebbh35fs6th86ejkdtgioem2ub6p.apps.googleusercontent.com',
@@ -31,7 +31,7 @@ module.exports = {
         PLAN_GROW_CLICKS_LIMIT: 100000,
         PLAN_SCALE_PRICE: 199.99,
         PLAN_SCALE_CLICKS_LIMIT: 250000,
-        COOKIE_DOMAIN: '.vercel.app'
+        COOKIE_DOMAIN: 'localhost'
       }
     }
   ]
