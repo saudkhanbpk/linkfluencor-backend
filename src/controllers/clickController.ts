@@ -3,7 +3,7 @@ import { handleClick } from '../services/clickService';
 
 const appLinkMappings = [
   {
-    name: "Instagram",
+    name: 'Instagram',
     urlPattern:
       /https:\/\/(www\.)?instagram\.com\/(reel\/([^/?#&]+)|p\/([^/?#&]+)|([^/?#&]+))/,
     appScheme: (match: string[]) => {
@@ -15,12 +15,12 @@ const appLinkMappings = [
     webFallback: (match: string[]) => `https://www.instagram.com/${match[2]}`,
   },
   {
-    name: "YouTube",
+    name: 'YouTube',
     urlPattern:
       /https:\/\/(www\.)?youtube\.com\/(watch\?v=[^&]+|channel\/[^/?#&]+|playlist\/[^/?#&]+)/,
     appScheme: (match: string[]) => {
-      if (match[2].startsWith("watch?v=")) {
-        const videoId = match[2].split("v=")[1];
+      if (match[2].startsWith('watch?v=')) {
+        const videoId = match[2].split('v=')[1];
         return `vnd.youtube://${videoId}`; // Deep link for YouTube videos in the app
       }
       return `https://www.youtube.com/${match[2]}`; // Web fallback for channels and playlists
@@ -28,7 +28,7 @@ const appLinkMappings = [
     webFallback: (match: string[]) => `https://www.youtube.com/${match[2]}`,
   },
   {
-    name: "Facebook",
+    name: 'Facebook',
     urlPattern:
       /https:\/\/(www\.)?facebook\.com\/(posts\/[^/?#&]+|pages\/[^/?#&]+|[^/?#&]+)/,
     appScheme: (match: string[]) =>
@@ -36,19 +36,19 @@ const appLinkMappings = [
     webFallback: (match: string[]) => `https://www.facebook.com/${match[2]}`,
   },
   {
-    name: "LinkedIn",
+    name: 'LinkedIn',
     urlPattern:
       /https:\/\/(www\.)?linkedin\.com\/(in\/[^/?#&]+|company\/[^/?#&]+|jobs\/view\/[^/?#&]+|posts\/[^/?#&]+)/,
     appScheme: (match: string[]) => {
-      if (match[2].startsWith("in/")) {
-        return `linkedin://in/${match[2].split("/")[1]}`; // Deep link for profiles
+      if (match[2].startsWith('in/')) {
+        return `linkedin://in/${match[2].split('/')[1]}`; // Deep link for profiles
       }
       return `https://www.linkedin.com/${match[2]}`; // Web fallback for jobs, posts, company pages
     },
     webFallback: (match: string[]) => `https://www.linkedin.com/${match[2]}`,
   },
   {
-    name: "X (Twitter)",
+    name: 'X (Twitter)',
     urlPattern:
       /https:\/\/(www\.)?twitter\.com\/(i\/status\/([^/?#&]+)|hashtag\/([^/?#&]+)|([^/?#&]+))/,
     appScheme: (match: string[]) => {
@@ -60,7 +60,8 @@ const appLinkMappings = [
   },
   {
     name: 'TikTok',
-    urlPattern: /https:\/\/(www\.)?tiktok\.com\/(@[^/?#&]+\/video\/([^/?#&]+)|(@[^/?#&]+)|([^/?#&]+))/,
+    urlPattern:
+      /https:\/\/(www\.)?tiktok\.com\/(@[^/?#&]+\/video\/([^/?#&]+)|(@[^/?#&]+)|([^/?#&]+))/,
     appScheme: (match: string[]) => {
       if (match[3]) {
         return `snssdk1128://aweme/detail/${match[3]}`; // TikTok video deep link
@@ -73,8 +74,9 @@ const appLinkMappings = [
     webFallback: (match: string[]) => `https://www.tiktok.com/${match[2]}`,
   },
   {
-    name: "Snapchat",
-    urlPattern: /https:\/\/(www\.)?snapchat\.com\/(add\/([^/?#&]+)|story\/([^/?#&]+))/,
+    name: 'Snapchat',
+    urlPattern:
+      /https:\/\/(www\.)?snapchat\.com\/(add\/([^/?#&]+)|story\/([^/?#&]+))/,
     appScheme: (match: string[]) => {
       if (match[3]) {
         return `snapchat://add/${match[3]}`; // Snapchat profile deep link
@@ -87,7 +89,7 @@ const appLinkMappings = [
     webFallback: (match: string[]) => `https://www.snapchat.com/${match[2]}`, // Web fallback
   },
   {
-    name: "Telegram",
+    name: 'Telegram',
     urlPattern: /https:\/\/(www\.)?t\.me\/([^/?#&]+)/,
     appScheme: (match: string[]) => `tg://resolve?domain=${match[2]}`, // Telegram deep link for profiles/channels
     webFallback: (match: string[]) => `https://t.me/${match[2]}`, // Web fallback
@@ -119,10 +121,14 @@ export const handleRedirect = async (
   try {
     const redirectUrl = await handleClick(req);
 
+    console.log('this is request ====>>>>', req);
+
     // Check if the request is coming from a mobile device
     if (isMobile(req.headers['user-agent'] || '')) {
       // Check if there is an app scheme available for the redirect URL
-      const appMapping = appLinkMappings.find(mapping => mapping.urlPattern.test(redirectUrl));
+      const appMapping = appLinkMappings.find(mapping =>
+        mapping.urlPattern.test(redirectUrl)
+      );
       if (appMapping) {
         const match = redirectUrl.match(appMapping.urlPattern);
         if (match) {
@@ -133,6 +139,9 @@ export const handleRedirect = async (
         }
       }
     }
+    console.log(
+      'outside of the mobile =========================================>>>>>>'
+    );
 
     // Fallback to the web URL if not on mobile or no app mapping found
     res.redirect(redirectUrl);
