@@ -82,6 +82,7 @@ connectDB();
 // app.get('/test',(req,res)=>{
 // res.json('backend is runing')
 // })
+
 app.use('/api', routes);
 app.use(errorHandler);
 
