@@ -299,8 +299,9 @@ export const getFormattedClicksByIntervalAndUser = async (
         throw new Error('Invalid interval');
     }
 
+    const userLinks = await getAllLinksForUser(userId);
     const clicks = await Click.find({
-      createdBy: userId,
+      linkId: { $in: userLinks.map(link => link._id) },
       clickedAt: {
         $gte: startOfInterval.toDate(),
         $lte: endOfInterval.toDate(),
