@@ -3,7 +3,6 @@ import moment, { Moment } from 'moment-timezone';
 import geoip from 'geoip-lite';
 import log from '../utils/logger';
 import requestIp from 'request-ip';
-// import UAParser from 'ua-parser-js';
 import {
   getAllLinksForUser,
   getOriginalUrl,
@@ -20,14 +19,13 @@ import { TimeInterval, TimeGranularity } from '../types/types';
 import { IClick } from 'interfaces/Click';
 import NotFoundError from '../errors/NotFoundError';
 import ConflictError from '../errors/ConflictError';
-// import { redirectToApp } from '../utils/redirectionUtils';
+import { getRedirectUrl } from '../utils/redirectionUtils';
 
 export const handleClick = async (req: Request) => {
   try {
     log.info('Handling click');
     const shortUrl = req.params.link;
     const link = await getOriginalUrl(shortUrl);
-    console.log({shortUrl, link});
     if (!link) {
       log.error('Invalid short url');
       throw new NotFoundError('Invalid short url');
@@ -49,13 +47,9 @@ export const handleClick = async (req: Request) => {
     await incrementLinkClicks(link._id);
     await saveClickInfo(req, shortUrl, link);
 
-    // will be used if neded to redirect to the app directly from the server
-    // const parser = new UAParser(req.headers['user-agent']);
-    // const os = parser.getOS();
-    // const osName = os.name || '';
-    // const redirectUrl = redirectToApp(link.originalUrl, osName);
+    const redirectUrl = getRedirectUrl(req, link.originalUrl);
 
-    return link.originalUrl;
+    return redirectUrl;
   } catch (error: any) {
     log.error(`Error handling click: ${error.message}`);
     throw error;

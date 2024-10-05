@@ -14,6 +14,7 @@ export const URL_PATTERNS = {
   tiktok: /(?:www\.)?tiktok\.com/,
   twitch: /(?:www\.)?twitch\.tv/,
   twitter: /(?:www\.)?twitter\.com/,
+  x: /(?:www\.)?x\.com/,
   youtubemusic: /(?:www\.)?music\.youtube\.com/,
   asos: /(?:www\.)?asos\.com/,
   deezer: /(?:www\.)?deezer\.com/,
