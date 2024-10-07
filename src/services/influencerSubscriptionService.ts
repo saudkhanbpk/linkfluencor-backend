@@ -85,7 +85,7 @@ export const getClicksLeft = async (user: Schema.Types.ObjectId) => {
 export const incrementClicks = async (user: Schema.Types.ObjectId) => {
   try {
     log.info(`Incrementing clicks for user ${user}`);
-    const subscription = await Subscription.findOne({ user });
+    const subscription = await Subscription.findOne({ userId: user });
 
     if (!subscription) {
       log.warn(`No subscription found for user ${user}`);

@@ -58,7 +58,7 @@ app.use(
     windowMs: 15 * 60 * 1000,
     max: 100000,
     message: 'Too many requests from this IP, please try again later.',
-    skip: () => process.env.NODE_ENV === 'development'
+    skip: () => process.env.NODE_ENV === 'development',
   })
 );
 
@@ -79,12 +79,8 @@ app.get('/test', (_req, res) => {
 });
 
 connectDB();
-// app.get('/test',(req,res)=>{
-// res.json('backend is runing')
-// })
 
 app.use('/api', routes);
 app.use(errorHandler);
-
 
 export default app;
